@@ -20,6 +20,7 @@ import {
   getMint,
   TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
+import { DatabaseService } from '../../database';
 
 const PROGRAM_ID = new PublicKey(
   process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
@@ -31,7 +32,10 @@ export class SolanaService {
   readonly program: anchor.Program;
   readonly master?: Keypair;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly db: DatabaseService,
+  ) {
     const rpc =
       this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
     this.connection = new Connection(rpc, 'confirmed');
@@ -135,6 +139,16 @@ export class SolanaService {
       vault: vault.toBase58(),
       confirmation: conf.value,
     };
+  }
+
+  public async getUserTokens(userId: string) {
+    const user = await this.db.user.findFirstOrThrow({ where: { id: userId } });
+    const userPubKey = new PublicKey(user.wallet);
+    const userTokens = this.connection.getParsedTokenAccountsByOwner(
+      userPubKey,
+      { programId: TOKEN_PROGRAM_ID },
+    );
+    return userTokens;
   }
 
   // get vaults from db by user addr

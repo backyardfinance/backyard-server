@@ -4,9 +4,15 @@ import { ConfigModule } from './config/config.module';
 import configuration from './config/configuration';
 import { ApiModule } from './api/api.module';
 import { ServicesModule } from './services/services.module';
+import { DatabaseModule } from './database';
 
 @Module({
-  imports: [ConfigModule(configuration), ApiModule, ServicesModule],
+  imports: [
+    ConfigModule(configuration),
+    ApiModule,
+    ServicesModule,
+    DatabaseModule,
+  ],
   controllers: [AppController],
   providers: [],
 })
