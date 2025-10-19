@@ -4,22 +4,22 @@ import {
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
+  sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
 } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
 import { BACKYARD_PROGRAMS_IDL } from '../../idl';
 import { ConfigService } from '../../config/config.module';
-import BN from 'bn.js';
 import {
-  getAssociatedTokenAddressSync,
-  createAssociatedTokenAccountIdempotentInstruction,
-  TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAccount,
-  getMint,
   TOKEN_2022_PROGRAM_ID,
+  createInitializeNonTransferableMintInstruction,
+  ExtensionType,
+  getMintLen,
+  createInitializeMint2Instruction,
 } from '@solana/spl-token';
+import { PrismaClient } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 const PROGRAM_ID = new PublicKey(
   process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
@@ -29,9 +29,12 @@ const PROGRAM_ID = new PublicKey(
 export class SolanaService {
   readonly connection: Connection;
   readonly program: anchor.Program;
-  readonly master?: Keypair;
+  readonly master: Keypair;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     const rpc =
       this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
     this.connection = new Connection(rpc, 'confirmed');
@@ -58,57 +61,17 @@ export class SolanaService {
       const secret = Uint8Array.from(JSON.parse(masterJson));
       this.master = Keypair.fromSecretKey(secret);
     }
-
-    console.log('vaultId: ', Keypair.generate().publicKey);
-
-    console.log('MASTER pubkey =', this.master?.publicKey.toBase58());
-
-    const kp = Keypair.fromSecretKey(
-      Uint8Array.from(JSON.parse(process.env.MASTER_WALLET_PRIVATE_KEY!)),
-    );
-    console.log(kp.publicKey.toBase58());
   }
 
-  private async ensureFunds(
-    pubkey: PublicKey,
-    minLamports = 0.05 * LAMPORTS_PER_SOL,
-  ) {
-    const bal = await this.connection.getBalance(pubkey, 'confirmed');
-    if (bal >= minLamports) return;
-    const sig = await this.connection.requestAirdrop(
-      pubkey,
-      1 * LAMPORTS_PER_SOL,
-    );
-    const latest = await this.connection.getLatestBlockhash('finalized');
-    await this.connection.confirmTransaction(
-      { signature: sig, ...latest },
-      'confirmed',
-    );
-  }
-
-  vaultPda(vaultId: PublicKey) {
-    const [pda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('vault'), vaultId.toBuffer()],
-      PROGRAM_ID,
-    );
-    return pda;
-  }
-
-  public async adminCreateVault(vaultId: PublicKey) {
-    if (!this.master)
-      throw new Error('MASTER_WALLET_PRIVATE_KEY not configured');
-
-    const vault = this.vaultPda(vaultId);
+  async createVault(protocolName: string) {
+    // vault id = public key; in db it's a public_key field
+    const vaultId = Keypair.generate().publicKey;
 
     const tx = new Transaction();
 
     const ix = await this.program.methods
       .createVault(vaultId)
-      .accounts({
-        master: this.master.publicKey,
-        vault,
-        systemProgram: SystemProgram.programId,
-      })
+      .accounts({})
       .instruction();
 
     tx.add(ix);
@@ -117,10 +80,7 @@ export class SolanaService {
       await this.connection.getLatestBlockhash('finalized');
     tx.recentBlockhash = blockhash;
     tx.feePayer = this.master.publicKey;
-
     tx.sign(this.master);
-
-    await this.ensureFunds(this.master.publicKey);
 
     const sig = await this.connection.sendRawTransaction(tx.serialize());
     const conf = await this.connection.confirmTransaction(
@@ -128,14 +88,89 @@ export class SolanaService {
       'confirmed',
     );
 
+    if (conf.value.err) {
+      throw new Error(`Transaction failed: ${JSON.stringify(conf.value.err)}`);
+    }
+
     // push vault to db
+    const vault = await this.prisma.vault.create({
+      data: {
+        public_key: vaultId.toString(),
+        name: 'jupiter',
+        tvl: 0,
+        apy: 0,
+      },
+    });
+
+    const vaultPdaAddress = this.getVaultPda(vaultId);
 
     return {
       signature: sig,
-      vault: vault.toBase58(),
       confirmation: conf.value,
+      vault: {
+        id: vault.id,
+        publicKey: vault.public_key,
+        name: vault.name,
+      },
+      vaultPdaAddress,
     };
   }
 
-  // get vaults from db by user addr
+  async createLP(
+    mintAuthority: PublicKey,
+    mintKeypair: Keypair = Keypair.generate(),
+  ) {
+    const extensions = [ExtensionType.NonTransferable];
+    const mintLen = getMintLen(extensions);
+    const lamports =
+      await this.connection.getMinimumBalanceForRentExemption(mintLen);
+
+    const createAccountIx = SystemProgram.createAccount({
+      fromPubkey: this.master.publicKey,
+      newAccountPubkey: mintKeypair.publicKey,
+      space: mintLen,
+      lamports,
+      programId: TOKEN_2022_PROGRAM_ID,
+    });
+
+    const initializeNonTransferableIx =
+      createInitializeNonTransferableMintInstruction(
+        mintKeypair.publicKey,
+        TOKEN_2022_PROGRAM_ID,
+      );
+
+    const initializeMintIx = createInitializeMint2Instruction(
+      mintKeypair.publicKey,
+      6,
+      // TODO: PDA here
+      mintAuthority,
+      mintAuthority,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const setupTx = new Transaction().add(
+      createAccountIx,
+      initializeNonTransferableIx,
+      initializeMintIx,
+    );
+
+    const signature = await sendAndConfirmTransaction(
+      this.connection,
+      setupTx,
+      [this.master, mintKeypair],
+    );
+
+    return {
+      signature,
+      mint: mintKeypair.publicKey.toBase58(),
+      authority: mintAuthority.toBase58(),
+    };
+  }
+
+  private getVaultPda(vaultId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from('vault'), vaultId.toBuffer()],
+      PROGRAM_ID,
+    )[0];
+  }
 }

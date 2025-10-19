@@ -6,10 +6,22 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class AdminCreateVaultDto {
+export class CreateVaultDto {
   @IsString()
   @ApiProperty()
-  vaultId!: string; // base58 pubkey to use as vault id
+  protocolName: string;
+
+  @IsString()
+  @ApiProperty()
+  lpName: string;
+
+  @IsString()
+  @ApiProperty()
+  symbol: string;
+
+  @IsString()
+  @ApiProperty()
+  uri: string;
 }
 
 export class QuoteDepositDto {

@@ -4,9 +4,15 @@ import { ConfigModule } from './config/config.module';
 import configuration from './config/configuration';
 import { ApiModule } from './api/api.module';
 import { ServicesModule } from './services/services.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [ConfigModule(configuration), ApiModule, ServicesModule],
+  imports: [
+    ConfigModule(configuration),
+    ApiModule,
+    ServicesModule,
+    PrismaModule,
+  ],
   controllers: [AppController],
   providers: [],
 })
