@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
@@ -10,6 +11,21 @@ export class AdminCreateVaultDto {
   @IsString()
   @ApiProperty()
   vaultId!: string; // base58 pubkey to use as vault id
+  @IsString()
+  @ApiProperty()
+  vaultName: string;
+}
+
+export class CreateStrategyDto {
+  @IsString()
+  @ApiProperty()
+  vaultId!: string;
+  @IsNumber()
+  @ApiProperty()
+  deposited_amount: number;
+  @IsString()
+  @ApiProperty()
+  userId!: string;
 }
 
 export class QuoteDepositDto {
@@ -37,4 +53,21 @@ export class QuoteDepositDto {
   @IsBoolean()
   @ApiProperty()
   ensureAtas?: boolean; // default true
+}
+
+export interface UserTokenView {
+  mint: string;
+  isNative: boolean;
+  decimals: number;
+  amountUi: number;
+  name?: string;
+  symbol?: string;
+  logoURI?: string;
+  priceUsd?: number;
+  valueUsd?: number;
+}
+
+export interface UserPortfolioView {
+  tokens: UserTokenView[];
+  totalValueUsd: number;
 }
