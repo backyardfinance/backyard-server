@@ -40,8 +40,9 @@ export class SolanaService {
     private readonly config: ConfigService,
     private readonly db: DatabaseService,
   ) {
-    const rpc =
-      this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
+    // const rpc =
+    //   this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
+    const rpc = 'https://solana-mainnet.gateway.tatum.io';
     this.connection = new Connection(rpc, 'confirmed');
 
     const dummy = Keypair.generate();
@@ -192,21 +193,12 @@ export class SolanaService {
     }));
   }
 
-  private async fetchJupList(): Promise<
-    Record<
-      string,
-      {
-        address: string;
-        name: string;
-        symbol: string;
-        logoURI?: string;
-        decimals: number;
-      }
-    >
-  > {
-    const url = 'https://token.jup.ag/strict';
-    const { data } = await axios.get(url, { timeout: 10_000 });
-    return Object.fromEntries((data as any[]).map((t) => [t.address, t]));
+  private async fetchJupList(mints: string[]) {
+    const res = await fetch(
+      `https://lite-api.jup.ag/tokens/v2/search?query=${mints.join(',')}`,
+    );
+
+    return await res.json();
   }
 
   private async fetchBirdeyePriceUsd(
@@ -249,41 +241,21 @@ export class SolanaService {
       return { tokens: [], totalValueUsd: 0 };
     }
 
-    const jup = await this.fetchJupList();
-    for (const t of base) {
-      const meta = jup[t.mint];
-      if (meta) {
-        t.name = meta.name;
-        t.symbol = meta.symbol;
-        t.logoURI = meta.logoURI;
-      }
-      if (t.isNative) {
-        t.name = t.name ?? 'Solana';
-        t.symbol = t.symbol ?? 'SOL';
-      }
-    }
-
-    const mints = [...new Set(base.map((t) => t.mint))];
-    const limit = pLimit(5);
-    const entries = await Promise.all(
-      mints.map((m) =>
-        limit(async () => [m, await this.getUsdPrice(m)] as const),
-      ),
-    );
-    const prices = Object.fromEntries(entries);
-
     let totalValueUsd = 0;
-    for (const t of base) {
-      const p = prices[t.mint];
-      if (typeof p === 'number') {
-        t.priceUsd = p;
-        t.valueUsd = +(p * t.amountUi).toFixed(6);
-        totalValueUsd += t.valueUsd;
-      }
+    const tokenInfo = await this.fetchJupList(base.map((i) => i.mint));
+    for (const ti of tokenInfo) {
+      const bi = base.find((i) => i.mint == ti.id);
+      bi.name = ti.name;
+      bi.symbol = ti.symbol;
+      bi.priceUsd = ti.usdPrice;
+      bi.logoURI = ti.icon;
+      bi.valueUsd = Number((bi.priceUsd * bi.amountUi).toFixed(6));
+      totalValueUsd += bi.valueUsd;
     }
-
-    const tokens = base.sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
-    return { tokens, totalValueUsd: +totalValueUsd.toFixed(6) };
+    const tokens = base
+      .filter((bt) => bt.valueUsd != null)
+      .sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
+    return { tokens, totalValueUsd: totalValueUsd };
   }
 
   private async fetchCoingeckoPriceUsd(
