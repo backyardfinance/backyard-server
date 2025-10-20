@@ -80,3 +80,21 @@ export interface UserPortfolioView {
   tokens: UserTokenView[];
   totalValueUsd: number;
 }
+
+export interface TokenInfoResponse {
+  address: string;
+  isNative: boolean;
+  name: string;
+  symbol: string;
+  priceUsd?: number;
+  logoURI?: string;
+  valueUsd?: number;
+  tokenAmount: TokenAmount;
+}
+
+export interface TokenAmount {
+  amount: number;
+  decimals: number;
+  uiAmount: number;
+  uiAmountString: string;
+}
