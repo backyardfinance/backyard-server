@@ -1,11 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { SolanaService } from '../../services/solana/solana.service';
 import { PublicKey } from '@solana/web3.js';
-import {
-  AdminCreateVaultDto,
-  CreateStrategyDto,
-  QuoteDepositDto,
-} from '../../dto';
+import { CreateStrategyDto, QuoteDepositDto } from '../../dto';
 import BN from 'bn.js';
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
@@ -16,12 +12,6 @@ export class SolanaController {
     private readonly solanaService: SolanaService,
     private readonly db: DatabaseService,
   ) {}
-
-  @Post('/admin/create-vault')
-  async adminCreateVault(@Body() dto: AdminCreateVaultDto) {
-    const vaultId = new PublicKey(dto.vaultId);
-    return this.solanaService.adminCreateVault(vaultId, dto.vaultName);
-  }
 
   @Post('/quote/deposit')
   async quoteDeposit(@Body() dto: QuoteDepositDto) {
