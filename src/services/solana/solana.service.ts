@@ -23,7 +23,7 @@ import {
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
 import axios from 'axios';
-import { UserTokenView } from '../../dto';
+import { TokenInfoResponse, UserTokenView } from '../../dto';
 import pLimit from 'p-limit';
 
 const PROGRAM_ID = new PublicKey(
@@ -40,8 +40,9 @@ export class SolanaService {
     private readonly config: ConfigService,
     private readonly db: DatabaseService,
   ) {
-    const rpc =
-      this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
+    // const rpc =
+    //   this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
+    const rpc = 'https://solana-mainnet.gateway.tatum.io';
     this.connection = new Connection(rpc, 'confirmed');
 
     const dummy = Keypair.generate();
@@ -192,21 +193,12 @@ export class SolanaService {
     }));
   }
 
-  private async fetchJupList(): Promise<
-    Record<
-      string,
-      {
-        address: string;
-        name: string;
-        symbol: string;
-        logoURI?: string;
-        decimals: number;
-      }
-    >
-  > {
-    const url = 'https://token.jup.ag/strict';
-    const { data } = await axios.get(url, { timeout: 10_000 });
-    return Object.fromEntries((data as any[]).map((t) => [t.address, t]));
+  private async fetchJupList(mints: string[]) {
+    const res = await fetch(
+      `https://lite-api.jup.ag/tokens/v2/search?query=${mints.join(',')}`,
+    );
+
+    return await res.json();
   }
 
   private async fetchBirdeyePriceUsd(
@@ -226,7 +218,9 @@ export class SolanaService {
     }
   }
 
-  public async getUserTokens(userId: string) {
+  public async getUserTokens(
+    userId: string,
+  ): Promise<{ tokens: TokenInfoResponse[]; totalValueUsd: number }> {
     const user = await this.db.user.findFirstOrThrow({ where: { id: userId } });
     const userPubKey = new PublicKey(user.wallet);
     const { value } = await this.connection.getParsedTokenAccountsByOwner(
@@ -234,56 +228,80 @@ export class SolanaService {
       { programId: TOKEN_PROGRAM_ID },
     );
 
-    const base: UserTokenView[] = value
-      .map((v) => {
-        const info = (v.account.data as any).parsed.info;
-        const mint = info.mint as string;
-        const isNative = !!info.isNative; // WSOL акаунт
-        const decimals = Number(info.tokenAmount.decimals);
-        const amountUi = Number(info.tokenAmount.uiAmount) || 0;
-        return { mint, isNative, decimals, amountUi };
-      })
-      .filter((t) => t.amountUi > 0 || t.isNative);
+    type RpcRow = {
+      isNative: boolean;
+      mint: string;
+      tokenAmount: {
+        amount: string;
+        decimals: number;
+        uiAmount: number;
+        uiAmountString: string;
+      };
+    };
 
-    if (base.length === 0) {
-      return { tokens: [], totalValueUsd: 0 };
-    }
-
-    const jup = await this.fetchJupList();
-    for (const t of base) {
-      const meta = jup[t.mint];
-      if (meta) {
-        t.name = meta.name;
-        t.symbol = meta.symbol;
-        t.logoURI = meta.logoURI;
-      }
-      if (t.isNative) {
-        t.name = t.name ?? 'Solana';
-        t.symbol = t.symbol ?? 'SOL';
-      }
-    }
-
-    const mints = [...new Set(base.map((t) => t.mint))];
-    const limit = pLimit(5);
-    const entries = await Promise.all(
-      mints.map((m) =>
-        limit(async () => [m, await this.getUsdPrice(m)] as const),
-      ),
+    const rpcRows: RpcRow[] = value.map((v) => {
+      const info = (v.account.data as any).parsed.info;
+      return {
+        isNative: !!info.isNative,
+        mint: info.mint as string,
+        tokenAmount: {
+          amount: info.tokenAmount.amount as string,
+          decimals: Number(info.tokenAmount.decimals),
+          uiAmount: Number(info.tokenAmount.uiAmount) || 0,
+          uiAmountString: String(info.tokenAmount.uiAmountString),
+        },
+      };
+    });
+    const filtered = rpcRows.filter(
+      (r) => r.tokenAmount.uiAmount > 0 || r.isNative,
     );
-    const prices = Object.fromEntries(entries);
+    if (filtered.length === 0) return { tokens: [], totalValueUsd: 0 };
+
+    const mints = [...new Set(filtered.map((r) => r.mint))];
+    const tokenInfo = await this.fetchJupList(mints);
+
+    const infoByMint = new Map(tokenInfo.map((ti) => [ti.id, ti]));
 
     let totalValueUsd = 0;
-    for (const t of base) {
-      const p = prices[t.mint];
-      if (typeof p === 'number') {
-        t.priceUsd = p;
-        t.valueUsd = +(p * t.amountUi).toFixed(6);
-        totalValueUsd += t.valueUsd;
-      }
-    }
 
-    const tokens = base.sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
-    return { tokens, totalValueUsd: +totalValueUsd.toFixed(6) };
+    const tokens: TokenInfoResponse[] = filtered.map((r) => {
+      const ti: any = infoByMint.get(r.mint);
+
+      const price =
+        ti && typeof ti.usdPrice === 'number' && Number.isFinite(ti.usdPrice)
+          ? (ti.usdPrice as number)
+          : undefined;
+
+      const valueUsd =
+        price != null
+          ? +(price * r.tokenAmount.uiAmount).toFixed(6)
+          : undefined;
+
+      if (valueUsd != null) totalValueUsd += valueUsd;
+
+      return {
+        address: r.mint,
+        isNative: r.isNative,
+        name: ti?.name ?? '',
+        symbol: ti?.symbol ?? '',
+        logoURI: ti?.icon,
+        priceUsd: price,
+        valueUsd,
+        tokenAmount: {
+          amount: Number(r.tokenAmount.amount),
+          decimals: r.tokenAmount.decimals,
+          uiAmount: r.tokenAmount.uiAmount,
+          uiAmountString: r.tokenAmount.uiAmountString,
+        },
+      };
+    });
+
+    tokens.sort((a, b) => (b.valueUsd ?? -1) - (a.valueUsd ?? -1));
+
+    return {
+      tokens,
+      totalValueUsd: +totalValueUsd.toFixed(6),
+    };
   }
 
   private async fetchCoingeckoPriceUsd(
