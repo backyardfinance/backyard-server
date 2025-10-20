@@ -4,6 +4,7 @@ import {
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
+  sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
 } from '@solana/web3.js';
@@ -19,6 +20,10 @@ import {
   getAccount,
   getMint,
   TOKEN_2022_PROGRAM_ID,
+  ExtensionType,
+  getMintLen,
+  createInitializeNonTransferableMintInstruction,
+  createInitializeMint2Instruction,
 } from '@solana/spl-token';
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
@@ -78,84 +83,7 @@ export class SolanaService {
     console.log(kp.publicKey.toBase58());
   }
 
-  private async ensureFunds(
-    pubkey: PublicKey,
-    minLamports = 0.05 * LAMPORTS_PER_SOL,
-  ) {
-    const bal = await this.connection.getBalance(pubkey, 'confirmed');
-    if (bal >= minLamports) return;
-    const sig = await this.connection.requestAirdrop(
-      pubkey,
-      1 * LAMPORTS_PER_SOL,
-    );
-    const latest = await this.connection.getLatestBlockhash('finalized');
-    await this.connection.confirmTransaction(
-      { signature: sig, ...latest },
-      'confirmed',
-    );
-  }
-
-  vaultPda(vaultId: PublicKey) {
-    const [pda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('vault'), vaultId.toBuffer()],
-      PROGRAM_ID,
-    );
-    return pda;
-  }
-
-  public async adminCreateVault(vaultId: PublicKey, vaultName: string) {
-    if (!this.master)
-      throw new Error('MASTER_WALLET_PRIVATE_KEY not configured');
-
-    const vault = this.vaultPda(vaultId);
-
-    const tx = new Transaction();
-
-    const ix = await this.program.methods
-      .createVault(vaultId)
-      .accounts({
-        master: this.master.publicKey,
-        vault,
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
-
-    tx.add(ix);
-
-    const { blockhash, lastValidBlockHeight } =
-      await this.connection.getLatestBlockhash('finalized');
-    tx.recentBlockhash = blockhash;
-    tx.feePayer = this.master.publicKey;
-
-    tx.sign(this.master);
-
-    await this.ensureFunds(this.master.publicKey);
-
-    const sig = await this.connection.sendRawTransaction(tx.serialize());
-    const conf = await this.connection.confirmTransaction(
-      { signature: sig, blockhash, lastValidBlockHeight },
-      'confirmed',
-    );
-
-    // push vault to db
-
-    await this.db.vault.create({
-      data: {
-        address: vault.toString(),
-        name: vaultName,
-        apy: 0,
-        tvl: 0,
-      },
-    });
-
-    return {
-      signature: sig,
-      vault: vault.toBase58(),
-      confirmation: conf.value,
-    };
-  }
-
-  public async createStrategy(
+  async createStrategy(
     vaultId: string,
     deposited_amount: number,
     userId: string,
@@ -179,7 +107,7 @@ export class SolanaService {
     return strategy as Strategy;
   }
 
-  public async getStrategies(userId: string) {
+  async getStrategies(userId: string) {
     console.log('userId: ', userId);
     const strategies = await this.db.strategy.findMany({
       where: {
@@ -191,6 +119,117 @@ export class SolanaService {
       deposited_amount: parseFloat(v.deposited_amount.toString()),
       current_price: parseFloat(v.current_price.toString()),
     }));
+  }
+
+  async createVault(protocolName: string) {
+    // vault id = public key; in db it's a public_key field
+    const vaultId = Keypair.generate().publicKey;
+
+    const tx = new Transaction();
+
+    const ix = await this.program.methods
+      .createVault(vaultId)
+      .accounts({})
+      .instruction();
+
+    tx.add(ix);
+
+    const { blockhash, lastValidBlockHeight } =
+      await this.connection.getLatestBlockhash('finalized');
+    tx.recentBlockhash = blockhash;
+    tx.feePayer = this.master.publicKey;
+    tx.sign(this.master);
+
+    const sig = await this.connection.sendRawTransaction(tx.serialize());
+    const conf = await this.connection.confirmTransaction(
+      { signature: sig, blockhash, lastValidBlockHeight },
+      'confirmed',
+    );
+
+    if (conf.value.err) {
+      throw new Error(`Transaction failed: ${JSON.stringify(conf.value.err)}`);
+    }
+
+    // push vault to db
+    const vault = await this.db.vault.create({
+      data: {
+        public_key: vaultId.toString(),
+        name: 'jupiter',
+        tvl: 0,
+        apy: 0,
+      },
+    });
+
+    const vaultPdaAddress = this.getVaultPda(vaultId);
+
+    return {
+      signature: sig,
+      confirmation: conf.value,
+      vault: {
+        id: vault.id,
+        publicKey: vault.public_key,
+        name: vault.name,
+      },
+      vaultPdaAddress,
+    };
+  }
+
+  async createLP(
+    mintAuthority: PublicKey,
+    mintKeypair: Keypair = Keypair.generate(),
+  ) {
+    const extensions = [ExtensionType.NonTransferable];
+    const mintLen = getMintLen(extensions);
+    const lamports =
+      await this.connection.getMinimumBalanceForRentExemption(mintLen);
+
+    const createAccountIx = SystemProgram.createAccount({
+      fromPubkey: this.master.publicKey,
+      newAccountPubkey: mintKeypair.publicKey,
+      space: mintLen,
+      lamports,
+      programId: TOKEN_2022_PROGRAM_ID,
+    });
+
+    const initializeNonTransferableIx =
+      createInitializeNonTransferableMintInstruction(
+        mintKeypair.publicKey,
+        TOKEN_2022_PROGRAM_ID,
+      );
+
+    const initializeMintIx = createInitializeMint2Instruction(
+      mintKeypair.publicKey,
+      6,
+      mintAuthority,
+      mintAuthority,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const setupTx = new Transaction().add(
+      createAccountIx,
+      initializeNonTransferableIx,
+      initializeMintIx,
+    );
+
+    const signature = await sendAndConfirmTransaction(
+      this.connection,
+      setupTx,
+      [this.master, mintKeypair],
+    );
+
+    return {
+      signature,
+      mint: mintKeypair.publicKey.toBase58(),
+      authority: mintAuthority.toBase58(),
+    };
+  }
+
+  private getVaultPda(vaultId: PublicKey) {
+    const [pda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('vault'), vaultId.toBuffer()],
+      PROGRAM_ID,
+    );
+    return pda;
   }
 
   private async fetchJupList(mints: string[]) {

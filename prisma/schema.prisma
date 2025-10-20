@@ -15,45 +15,44 @@ datasource db {
 }
 
 model User {
-  id       String      @id @default(uuid())
-  name     String
-  email    String
-  wallet   String?
-  strategies  Strategy[]
+  id         String     @id @default(uuid())
+  name       String
+  email      String
+  wallet     String?
+  strategies Strategy[]
 }
 
 model Vault {
-  id         String      @id @default(uuid())
-  address    String?
-  name       String
-  vault_strategies        VaultStartegy[]
-  tvl        Decimal  @db.Decimal(38, 18)
-  apy        Decimal  @db.Decimal(38, 18)
+  id               String          @id @default(uuid())
+  public_key       String
+  name             String
+  vault_strategies VaultStartegy[]
+  tvl              Decimal         @db.Decimal(38, 18)
+  apy              Decimal         @db.Decimal(38, 18)
 }
 
 model Strategy {
-  id                      String      @id @default(uuid())
-  user_id                 String
-  deposited_amount        Decimal  @db.Decimal(38, 18)
-  current_price           Decimal  @db.Decimal(38, 18)
-  vault_strategies        VaultStartegy[]
-  strategy_statistics     StartegyStatistics[]
-  user                    User @relation(fields: [user_id], references: [id])
+  id                  String               @id @default(uuid())
+  user_id             String
+  deposited_amount    Decimal              @db.Decimal(38, 18)
+  current_price       Decimal              @db.Decimal(38, 18)
+  vault_strategies    VaultStartegy[]
+  strategy_statistics StartegyStatistics[]
+  user                User                 @relation(fields: [user_id], references: [id])
 }
 
 model VaultStartegy {
-  id                      String      @id @default(uuid())
-  strategy_id             String
-  vault_id                String
-  strategy                Strategy    @relation(fields: [strategy_id], references: [id])
-  vault                   Vault       @relation(fields: [vault_id], references: [id])
+  id          String   @id @default(uuid())
+  strategy_id String
+  vault_id    String
+  strategy    Strategy @relation(fields: [strategy_id], references: [id])
+  vault       Vault    @relation(fields: [vault_id], references: [id])
 }
 
 model StartegyStatistics {
-  id                      String      @id @default(uuid())
-  strategy_id             String
-  date                    DateTime
-  price                   Decimal  @db.Decimal(38, 18)
-  strategy                Strategy    @relation(fields: [strategy_id], references: [id])
+  id          String   @id @default(uuid())
+  strategy_id String
+  date        DateTime
+  price       Decimal  @db.Decimal(38, 18)
+  strategy    Strategy @relation(fields: [strategy_id], references: [id])
 }
-
