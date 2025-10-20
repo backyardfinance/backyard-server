@@ -77,9 +77,9 @@ export interface TokenInfoResponse {
   isNative: boolean;
   name: string;
   symbol: string;
-  priceUsd: number;
-  logoURI: string;
-  valueUsd: number;
+  priceUsd?: number;
+  logoURI?: string;
+  valueUsd?: number;
   tokenAmount: TokenAmount;
 }
 
