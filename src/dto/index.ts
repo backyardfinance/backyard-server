@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsEnum,
   IsNumber,
   IsNumberString,
   IsOptional,
@@ -7,10 +8,15 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
+export enum VaultPlatform {
+  Jupiter = 'Jupiter',
+  Kamino = 'Kamino',
+}
+
 export class CreateVaultDto {
-  @IsString()
-  @ApiProperty()
-  protocolName: string;
+  @IsEnum(VaultPlatform)
+  @ApiProperty({ enum: VaultPlatform, example: VaultPlatform.Jupiter })
+  platform: VaultPlatform;
 
   @IsString()
   @ApiProperty()

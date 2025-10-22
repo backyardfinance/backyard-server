@@ -6,4 +6,5 @@ export default () => ({
   rpc_url: env.string('RPC_URL'),
   program_id: env.string('PROGRAM_ID'),
   master_wallet_private_key: env.string('MASTER_WALLET_PRIVATE_KEY'),
+  app_test_mode: env.bool('APP_TEST_MODE', false),
 });

@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { SolanaService } from '../../services/solana/solana.service';
-import { PublicKey } from '@solana/web3.js';
-import { CreateStrategyDto, QuoteDepositDto } from '../../dto';
-import BN from 'bn.js';
+import { CreateStrategyDto } from '../../dto';
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
 
@@ -13,34 +11,24 @@ export class SolanaController {
     private readonly db: DatabaseService,
   ) {}
 
-  @Post('/quote/deposit')
-  async quoteDeposit(@Body() dto: QuoteDepositDto) {
-    const signer = new PublicKey(dto.signer);
-    const vaultId = new PublicKey(dto.vaultId);
-    const inputMint = new PublicKey(dto.inputMint);
-    const lpMint = new PublicKey(dto.lpMint);
-    const amount = new BN(dto.amount);
+  // add yard reward and total apy - for hover UI
+  // add user optional param and for him add user positon --
 
-    // return this.solanaService.quoteDeposit({
-    //   signer,
-    //   vaultId,
-    //   inputMint,
-    //   lpMint,
-    //   amount,
-    //   ensureAtas: dto.ensureAtas,
-    // });
-  }
+  // add vault_name -search, and add platform name
 
+  // for interest earned -> query underlying vault for LP token and get its price with CRON
+  // EASY -> total_pos -> deposited + interest earned
   @Get('/vaults')
   async getAllVaults() {
     const vaults = await this.db.vault.findMany();
     return vaults.map((v) => ({
       ...v,
-      tvl: parseFloat(v.tvl.toString()),
-      apy: parseFloat(v.apy.toString()),
+      tvl: parseFloat(v.current_tvl.toString()),
+      apy: parseFloat(v.current_apy.toString()),
     }));
   }
 
+  // make arr of vaults and dep amount
   @Post('strategy/create')
   async createStrategy(@Body() dto: CreateStrategyDto): Promise<Strategy> {
     return await this.solanaService.createStrategy(
@@ -50,6 +38,8 @@ export class SolanaController {
     );
   }
 
+  // add - arr of vaults with vaultId and alloc percentage
+  // add postion metric
   @Get('strategies/:userId')
   async getStrategies(@Param('userId') userId: string) {
     return await this.solanaService.getStrategies(userId);
@@ -59,4 +49,13 @@ export class SolanaController {
   async getUserTokens(@Param('userId') userId: string) {
     return await this.solanaService.getUserTokens(userId);
   }
+
+  // endpoint -> vaults total deposits, CRON -> get vault underlying TVL by cron, and aggregate backyard TVL in tkn and total = both added, also in USD
+  // possibly in get all vaults endpoint, also get native APY from native vault SC, total APY = native APY + YARD reward
+
+  // graph endpoint vault overview -> apy in perc, TVL in tkn, asset price in USD
+
+  // graph endpoint vault my position -> deposited + interest earned & yard reward arr(2 arrays)
+
+  // graph endpoint vault my position APY -> daily native APY + yard reward
 }

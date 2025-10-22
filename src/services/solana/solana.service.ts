@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import {
   Connection,
   Keypair,
-  LAMPORTS_PER_SOL,
   PublicKey,
   sendAndConfirmTransaction,
   SystemProgram,
@@ -11,14 +10,8 @@ import {
 import * as anchor from '@coral-xyz/anchor';
 import { BACKYARD_PROGRAMS_IDL } from '../../idl';
 import { ConfigService } from '../../config/config.module';
-import BN from 'bn.js';
 import {
-  getAssociatedTokenAddressSync,
-  createAssociatedTokenAccountIdempotentInstruction,
   TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAccount,
-  getMint,
   TOKEN_2022_PROGRAM_ID,
   ExtensionType,
   getMintLen,
@@ -28,8 +21,7 @@ import {
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
 import axios from 'axios';
-import { TokenInfoResponse, UserTokenView } from '../../dto';
-import pLimit from 'p-limit';
+import { TokenInfoResponse, VaultPlatform } from '../../dto';
 
 const PROGRAM_ID = new PublicKey(
   process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
@@ -90,7 +82,7 @@ export class SolanaService {
   ): Promise<Strategy> {
     const strategy = await this.db.strategy.create({
       data: {
-        deposited_amount: deposited_amount,
+        // deposited_amount: deposited_amount,
         current_price: 0,
         user_id: userId,
       },
@@ -100,6 +92,11 @@ export class SolanaService {
       data: {
         strategy_id: strategy.id,
         vault_id: vaultId,
+        deposited_amount: deposited_amount,
+        // api call
+        deposited_amount_usd: deposited_amount,
+        interest_earned: 0,
+        interest_earned_usd: 0,
       },
     });
 
@@ -116,12 +113,12 @@ export class SolanaService {
     });
     return strategies.map((v) => ({
       ...v,
-      deposited_amount: parseFloat(v.deposited_amount.toString()),
+      // deposited_amount: parseFloat(v.deposited_amount.toString()),
       current_price: parseFloat(v.current_price.toString()),
     }));
   }
 
-  async createVault(protocolName: string) {
+  async createVault(protocolName: VaultPlatform) {
     // vault id = public key; in db it's a public_key field
     const vaultId = Keypair.generate().publicKey;
 
@@ -155,8 +152,9 @@ export class SolanaService {
       data: {
         public_key: vaultId.toString(),
         name: 'jupiter',
-        tvl: 0,
-        apy: 0,
+        current_tvl: 0,
+        current_apy: 0,
+        platform: protocolName,
       },
     });
 

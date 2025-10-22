@@ -15,7 +15,7 @@ export class AdminController {
 
   @Post('create-vault')
   async createVault(@Body() dto: CreateVaultDto) {
-    const vaultResult = await this.solanaService.createVault(dto.protocolName);
+    const vaultResult = await this.solanaService.createVault(dto.platform);
 
     const lpResult = await this.solanaService.createLP(
       vaultResult.vaultPdaAddress,

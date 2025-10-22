@@ -14,39 +14,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum VaultPlatform {
+  Jupiter
+  Kamino
+}
+
 model User {
   id         String     @id @default(uuid())
-  name       String
-  email      String
+  name       String?
   wallet     String?
   strategies Strategy[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Vault {
-  id               String          @id @default(uuid())
-  public_key       String
-  name             String
+  id         String        @id @default(uuid())
+  public_key String        @unique
+  name       String
+  platform   VaultPlatform
+
+  current_tvl         Decimal @default(0) @db.Decimal(38, 18)
+  current_apy         Decimal @default(0) @db.Decimal(38, 18)
+  current_asset_price Decimal @default(0) @db.Decimal(38, 18)
+  current_yard_reward Decimal @default(0) @db.Decimal(38, 18)
+
   vault_strategies VaultStartegy[]
-  tvl              Decimal         @db.Decimal(38, 18)
-  apy              Decimal         @db.Decimal(38, 18)
+  vault_histories  VaultHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model VaultHistory {
+  id      String @id @default(uuid())
+  vault   Vault  @relation(fields: [vaultId], references: [id])
+  vaultId String
+
+  tvl         Decimal @default(0) @db.Decimal(38, 18)
+  apy         Decimal @default(0) @db.Decimal(38, 18)
+  asset_price Decimal @default(0) @db.Decimal(38, 18)
+  yard_reward Decimal @default(0) @db.Decimal(38, 18)
+
+  recorded_at DateTime @default(now())
+
+  @@unique([vaultId, recorded_at])
+  @@index([vaultId, recorded_at])
 }
 
 model Strategy {
   id                  String               @id @default(uuid())
   user_id             String
-  deposited_amount    Decimal              @db.Decimal(38, 18)
   current_price       Decimal              @db.Decimal(38, 18)
   vault_strategies    VaultStartegy[]
   strategy_statistics StartegyStatistics[]
   user                User                 @relation(fields: [user_id], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model VaultStartegy {
-  id          String   @id @default(uuid())
-  strategy_id String
-  vault_id    String
-  strategy    Strategy @relation(fields: [strategy_id], references: [id])
-  vault       Vault    @relation(fields: [vault_id], references: [id])
+  id                   String   @id @default(uuid())
+  strategy_id          String
+  vault_id             String
+  strategy             Strategy @relation(fields: [strategy_id], references: [id])
+  vault                Vault    @relation(fields: [vault_id], references: [id])
+  deposited_amount     Decimal  @db.Decimal(38, 18) // after deposit -> query Price API and get USD price
+  deposited_amount_usd Decimal  @db.Decimal(38, 18)
+  interest_earned      Decimal  @db.Decimal(38, 18)
+  interest_earned_usd  Decimal  @db.Decimal(38, 18)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model StartegyStatistics {

@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Vault" ADD COLUMN     "current_yard_reward" DECIMAL(38,18) NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "VaultHistory" ADD COLUMN     "yard_reward" DECIMAL(38,18) NOT NULL DEFAULT 0,
+ALTER COLUMN "tvl" SET DEFAULT 0,
+ALTER COLUMN "apy" SET DEFAULT 0,
+ALTER COLUMN "asset_price" SET DEFAULT 0;
