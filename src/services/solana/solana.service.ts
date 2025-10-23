@@ -8,7 +8,7 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
-import { BACKYARD_PROGRAMS_IDL } from '../../idl';
+import idl from '../../idl/backyard_programs.json';
 import { ConfigService } from '../../config/config.module';
 import {
   TOKEN_PROGRAM_ID,
@@ -55,7 +55,7 @@ export class SolanaService {
     });
 
     this.program = new anchor.Program(
-      BACKYARD_PROGRAMS_IDL as anchor.Idl,
+      idl as anchor.Idl,
       provider as anchor.Provider,
     );
 
@@ -64,10 +64,6 @@ export class SolanaService {
       const secret = Uint8Array.from(JSON.parse(masterJson));
       this.master = Keypair.fromSecretKey(secret);
     }
-
-    console.log('vaultId: ', Keypair.generate().publicKey);
-
-    console.log('MASTER pubkey =', this.master?.publicKey.toBase58());
 
     const kp = Keypair.fromSecretKey(
       Uint8Array.from(JSON.parse(process.env.MASTER_WALLET_PRIVATE_KEY!)),

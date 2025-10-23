@@ -6,6 +6,7 @@ import { CronJobsService } from './cron-jobs/cron-jobs.service';
 import { JupiterApiService } from './jupiter-api/jupiter-api.service';
 import { KaminoApiService } from './kamino-service/kamino-api.service';
 import { VaultService } from './vault/vault.service';
+import { DepositService } from './deposit/deposit.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -16,7 +17,8 @@ import { VaultService } from './vault/vault.service';
     JupiterApiService,
     KaminoApiService,
     VaultService,
+    DepositService,
   ],
-  exports: [SolanaService, MetaplexService, VaultService],
+  exports: [SolanaService, MetaplexService, VaultService, DepositService],
 })
 export class ServicesModule {}

@@ -1,386 +1,594 @@
-export const BACKYARD_PROGRAMS_IDL = {
-  address: '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/backyard_programs.json`.
+ */
+export type BackyardPrograms = {
+  address: '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv';
   metadata: {
-    name: 'backyard_programs',
-    version: '0.1.0',
-    spec: '0.1.0',
-    description: 'Created with Anchor',
-  },
+    name: 'backyardPrograms';
+    version: '0.1.0';
+    spec: '0.1.0';
+    description: 'Created with Anchor';
+  };
   instructions: [
     {
-      name: 'create_vault',
-      discriminator: [29, 237, 247, 208, 193, 82, 54, 135],
+      name: 'createVault';
+      discriminator: [29, 237, 247, 208, 193, 82, 54, 135];
       accounts: [
         {
-          name: 'master',
-          writable: true,
-          signer: true,
-          address: '6RdP9KmhSwuUHRJ3T72TsVi3t4F2Luf7m3BRjh1w3Sor',
+          name: 'master';
+          writable: true;
+          signer: true;
+          address: '6RdP9KmhSwuUHRJ3T72TsVi3t4F2Luf7m3BRjh1w3Sor';
         },
         {
-          name: 'vault',
-          writable: true,
+          name: 'vault';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'const',
-                value: [118, 97, 117, 108, 116],
+                kind: 'const';
+                value: [118, 97, 117, 108, 116];
               },
               {
-                kind: 'arg',
-                path: 'vault_id',
+                kind: 'arg';
+                path: 'protocolIndex';
               },
-            ],
-          },
+              {
+                kind: 'arg';
+                path: 'vaultId';
+              },
+            ];
+          };
         },
         {
-          name: 'system_program',
-          address: '11111111111111111111111111111111',
+          name: 'systemProgram';
+          address: '11111111111111111111111111111111';
         },
-      ],
+      ];
       args: [
         {
-          name: 'vault_id',
-          type: 'pubkey',
+          name: 'protocolIndex';
+          type: 'u8';
         },
-      ],
+        {
+          name: 'vaultId';
+          type: 'pubkey';
+        },
+      ];
     },
     {
-      name: 'deposit',
-      discriminator: [242, 35, 198, 137, 82, 225, 242, 182],
+      name: 'deposit';
+      discriminator: [242, 35, 198, 137, 82, 225, 242, 182];
       accounts: [
         {
-          name: 'signer',
-          writable: true,
-          signer: true,
+          name: 'signer';
+          writable: true;
+          signer: true;
         },
         {
-          name: 'input_token',
+          name: 'inputToken';
         },
         {
-          name: 'signer_input_ata',
-          writable: true,
+          name: 'signerInputAta';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'account',
-                path: 'signer',
+                kind: 'account';
+                path: 'signer';
               },
               {
-                kind: 'account',
-                path: 'token_program',
+                kind: 'account';
+                path: 'tokenProgram';
               },
               {
-                kind: 'account',
-                path: 'input_token',
+                kind: 'account';
+                path: 'inputToken';
               },
-            ],
+            ];
             program: {
-              kind: 'const',
+              kind: 'const';
               value: [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89,
-              ],
-            },
-          },
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
         },
         {
-          name: 'vault_input_ata',
-          writable: true,
+          name: 'vaultInputAta';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'account',
-                path: 'vault',
+                kind: 'account';
+                path: 'vault';
               },
               {
-                kind: 'account',
-                path: 'token_program',
+                kind: 'account';
+                path: 'tokenProgram';
               },
               {
-                kind: 'account',
-                path: 'input_token',
+                kind: 'account';
+                path: 'inputToken';
               },
-            ],
+            ];
             program: {
-              kind: 'const',
+              kind: 'const';
               value: [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89,
-              ],
-            },
-          },
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
         },
         {
-          name: 'lp_token',
-          writable: true,
+          name: 'lpToken';
+          writable: true;
         },
         {
-          name: 'signer_lp_ata',
-          writable: true,
+          name: 'signerLpAta';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'account',
-                path: 'signer',
+                kind: 'account';
+                path: 'signer';
               },
               {
-                kind: 'account',
-                path: 'token_program_2022',
+                kind: 'account';
+                path: 'tokenProgram2022';
               },
               {
-                kind: 'account',
-                path: 'lp_token',
+                kind: 'account';
+                path: 'lpToken';
               },
-            ],
+            ];
             program: {
-              kind: 'const',
+              kind: 'const';
               value: [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89,
-              ],
-            },
-          },
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
         },
         {
-          name: 'vault',
-          writable: true,
+          name: 'vault';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'const',
-                value: [118, 97, 117, 108, 116],
+                kind: 'const';
+                value: [118, 97, 117, 108, 116];
               },
               {
-                kind: 'arg',
-                path: 'vault_id',
+                kind: 'arg';
+                path: 'protocolIndex';
               },
-            ],
-          },
+              {
+                kind: 'arg';
+                path: 'vaultId';
+              },
+            ];
+          };
         },
         {
-          name: 'associated_token_program',
-          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+          name: 'associatedTokenProgram';
+          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
         },
         {
-          name: 'token_program',
+          name: 'tokenProgram';
         },
         {
-          name: 'token_program_2022',
+          name: 'tokenProgram2022';
         },
         {
-          name: 'system_program',
-          address: '11111111111111111111111111111111',
+          name: 'systemProgram';
+          address: '11111111111111111111111111111111';
         },
-      ],
+      ];
       args: [
         {
-          name: 'vault_id',
-          type: 'pubkey',
+          name: 'protocolIndex';
+          type: 'u8';
         },
         {
-          name: 'amount',
-          type: 'u64',
+          name: 'vaultId';
+          type: 'pubkey';
         },
-      ],
+        {
+          name: 'amount';
+          type: 'u64';
+        },
+      ];
     },
     {
-      name: 'withdraw',
-      discriminator: [183, 18, 70, 156, 148, 109, 161, 34],
+      name: 'withdraw';
+      discriminator: [183, 18, 70, 156, 148, 109, 161, 34];
       accounts: [
         {
-          name: 'signer',
-          writable: true,
-          signer: true,
+          name: 'signer';
+          writable: true;
+          signer: true;
         },
         {
-          name: 'output_token',
+          name: 'outputToken';
         },
         {
-          name: 'signer_output_ata',
-          writable: true,
+          name: 'signerOutputAta';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'account',
-                path: 'signer',
+                kind: 'account';
+                path: 'signer';
               },
               {
-                kind: 'account',
-                path: 'token_program',
+                kind: 'account';
+                path: 'tokenProgram';
               },
               {
-                kind: 'account',
-                path: 'output_token',
+                kind: 'account';
+                path: 'outputToken';
               },
-            ],
+            ];
             program: {
-              kind: 'const',
+              kind: 'const';
               value: [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89,
-              ],
-            },
-          },
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
         },
         {
-          name: 'vault_output_ata',
-          writable: true,
+          name: 'vaultOutputAta';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'account',
-                path: 'vault',
+                kind: 'account';
+                path: 'vault';
               },
               {
-                kind: 'account',
-                path: 'token_program',
+                kind: 'account';
+                path: 'tokenProgram';
               },
               {
-                kind: 'account',
-                path: 'output_token',
+                kind: 'account';
+                path: 'outputToken';
               },
-            ],
+            ];
             program: {
-              kind: 'const',
+              kind: 'const';
               value: [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89,
-              ],
-            },
-          },
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
         },
         {
-          name: 'lp_token',
-          writable: true,
+          name: 'lpToken';
+          writable: true;
         },
         {
-          name: 'signer_lp_ata',
-          writable: true,
+          name: 'signerLpAta';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'account',
-                path: 'signer',
+                kind: 'account';
+                path: 'signer';
               },
               {
-                kind: 'account',
-                path: 'token_program_2022',
+                kind: 'account';
+                path: 'tokenProgram2022';
               },
               {
-                kind: 'account',
-                path: 'lp_token',
+                kind: 'account';
+                path: 'lpToken';
               },
-            ],
+            ];
             program: {
-              kind: 'const',
+              kind: 'const';
               value: [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89,
-              ],
-            },
-          },
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89,
+              ];
+            };
+          };
         },
         {
-          name: 'vault',
-          writable: true,
+          name: 'vault';
+          writable: true;
           pda: {
             seeds: [
               {
-                kind: 'const',
-                value: [118, 97, 117, 108, 116],
+                kind: 'const';
+                value: [118, 97, 117, 108, 116];
               },
               {
-                kind: 'arg',
-                path: 'vault_id',
+                kind: 'arg';
+                path: 'protocolIndex';
               },
-            ],
-          },
+              {
+                kind: 'arg';
+                path: 'vaultId';
+              },
+            ];
+          };
         },
         {
-          name: 'associated_token_program',
-          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+          name: 'associatedTokenProgram';
+          address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
         },
         {
-          name: 'token_program',
+          name: 'tokenProgram';
         },
         {
-          name: 'token_program_2022',
+          name: 'tokenProgram2022';
         },
         {
-          name: 'system_program',
-          address: '11111111111111111111111111111111',
+          name: 'systemProgram';
+          address: '11111111111111111111111111111111';
         },
-      ],
+      ];
       args: [
         {
-          name: 'vault_id',
-          type: 'pubkey',
+          name: 'protocolIndex';
+          type: 'u8';
         },
         {
-          name: 'amount',
-          type: 'u64',
+          name: 'vaultId';
+          type: 'pubkey';
         },
-      ],
+        {
+          name: 'amount';
+          type: 'u64';
+        },
+      ];
     },
-  ],
+  ];
   accounts: [
     {
-      name: 'Vault',
-      discriminator: [211, 8, 232, 43, 2, 152, 117, 119],
+      name: 'vault';
+      discriminator: [211, 8, 232, 43, 2, 152, 117, 119];
     },
-  ],
+  ];
   errors: [
     {
-      code: 6000,
-      name: 'CustomError',
-      msg: 'Custom error message',
+      code: 6000;
+      name: 'customError';
+      msg: 'Custom error message';
     },
     {
-      code: 6001,
-      name: 'NotOwner',
-      msg: 'You are not the owner',
+      code: 6001;
+      name: 'notOwner';
+      msg: 'You are not the owner';
     },
     {
-      code: 6002,
-      name: 'InvalidLpMintAuthority',
-      msg: 'Invalid LP mint authority',
+      code: 6002;
+      name: 'invalidLpMintAuthority';
+      msg: 'Invalid LP mint authority';
     },
     {
-      code: 6003,
-      name: 'InvalidAmount',
-      msg: 'Invalid amount',
+      code: 6003;
+      name: 'invalidAmount';
+      msg: 'Invalid amount';
     },
-  ],
+  ];
   types: [
     {
-      name: 'Vault',
+      name: 'vault';
       type: {
-        kind: 'struct',
+        kind: 'struct';
         fields: [
           {
-            name: 'vault_id',
-            type: 'pubkey',
+            name: 'protocolIndex';
+            type: 'u8';
           },
           {
-            name: 'bump',
-            type: 'u8',
+            name: 'vaultId';
+            type: 'pubkey';
           },
-        ],
-      },
+          {
+            name: 'bump';
+            type: 'u8';
+          },
+        ];
+      };
     },
-  ],
+  ];
   constants: [
     {
-      name: 'SEED',
-      type: 'string',
-      value: '"anchor"',
+      name: 'seed';
+      type: 'string';
+      value: '"anchor"';
     },
-  ],
+  ];
 };
