@@ -104,3 +104,20 @@ export interface TokenAmount {
   uiAmount: number;
   uiAmountString: string;
 }
+
+export interface VaultInfo {
+  apy: number;
+  asset_price: number;
+  tvl: number;
+  yard_reward: number;
+}
+
+export interface VaultInfoResponse extends VaultInfo {
+  id: string;
+  name: string;
+  platform: string;
+}
+
+export interface VaultHistoryInfoResponse extends VaultInfo {
+  recorded_at: Date;
+}

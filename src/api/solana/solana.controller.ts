@@ -18,15 +18,6 @@ export class SolanaController {
 
   // for interest earned -> query underlying vault for LP token and get its price with CRON
   // EASY -> total_pos -> deposited + interest earned
-  @Get('/vaults')
-  async getAllVaults() {
-    const vaults = await this.db.vault.findMany();
-    return vaults.map((v) => ({
-      ...v,
-      tvl: parseFloat(v.current_tvl.toString()),
-      apy: parseFloat(v.current_apy.toString()),
-    }));
-  }
 
   // make arr of vaults and dep amount
   @Post('strategy/create')

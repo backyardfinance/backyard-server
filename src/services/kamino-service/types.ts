@@ -1,0 +1,37 @@
+export interface Kvault {
+  vault_id: string;
+  apy7d: string;
+  apy24h: string;
+  apy30d: string;
+  apy90d: string;
+  apy180d: string;
+  apy365d: string;
+  tokenPrice: string;
+  solPrice: string;
+  tokensAvailable: string;
+  tokensAvailableUsd: string;
+  tokensInvested: string;
+  tokensInvestedUsd: string;
+  sharePrice: string;
+  tokensPerShare: string;
+  apy: string;
+  apyTheoretical: string;
+  apyActual: string;
+  apyFarmRewards: string;
+  apyIncentives: string;
+  apyReservesIncentives: string;
+  numberOfHolders: number;
+  sharesIssued: string;
+  cumulativeInterestEarned: string;
+  cumulativeInterestEarnedUsd: string;
+  cumulativeInterestEarnedSol: string;
+  interestEarnedPerSecond: string;
+  interestEarnedPerSecondUsd: string;
+  interestEarnedPerSecondSol: string;
+  cumulativePerformanceFees: string;
+  cumulativePerformanceFeesUsd: string;
+  cumulativePerformanceFeesSol: string;
+  cumulativeManagementFees: string;
+  cumulativeManagementFeesUsd: string;
+  cumulativeManagementFeesSol: string;
+}

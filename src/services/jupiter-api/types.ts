@@ -15,3 +15,7 @@ export interface FluidToken {
   supplyRate?: number | string;
   rewardsRate?: number | string;
 }
+
+export interface VaultFluidToken extends FluidToken {
+  vaultId: string;
+}
