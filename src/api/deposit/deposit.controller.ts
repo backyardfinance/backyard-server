@@ -1,10 +1,10 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { DepositService } from 'src/services/deposit/deposit.service';
-import { CreateDepositDto } from 'src/services/deposit/dto';
-import { CreateDepositRequest } from './request';
 import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
+import { CreateDepositRequest } from './request';
+import { CreateDepositTransactionDto } from 'src/services/deposit/dto';
 
 @Controller('deposit')
 @ApiTags('deposit')
@@ -13,7 +13,7 @@ export class DepositController {
 
   @Post('transactions')
   async createDepositTransactions(@Body() body: CreateDepositRequest) {
-    const dto: CreateDepositDto = {
+    const dto: CreateDepositTransactionDto = {
       protocolIndex: body.protocolIndex,
       vaultId: new PublicKey(body.vaultId),
       amount: new BN(body.amount),

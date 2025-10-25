@@ -14,7 +14,7 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js';
 import idl from '../../idl/backyard_programs.json';
-import { CreateDepositDto } from './dto';
+import { CreateDepositTransactionDto } from './dto';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 @Injectable()
@@ -38,7 +38,7 @@ export class DepositService {
     this.program = new Program(idl as Idl, provider as Provider);
   }
 
-  async createTransaction(dto: CreateDepositDto) {
+  async createTransaction(dto: CreateDepositTransactionDto) {
     const { protocolIndex, vaultId, amount, signer, inputToken, lpMint } = dto;
     const { blockhash, lastValidBlockHeight } =
       await this.connection.getLatestBlockhash('finalized');

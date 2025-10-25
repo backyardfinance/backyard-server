@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { PublicKey } from '@solana/web3.js';
 import { CreateVaultDto } from 'src/dto';
 import { MetaplexService } from 'src/services/metaplex/metaplex.service';
 import { CreateMetadataParams } from 'src/services/metaplex/types';
@@ -17,8 +18,9 @@ export class AdminController {
   async createVault(@Body() dto: CreateVaultDto) {
     const vaultResult = await this.solanaService.createVault(dto.platform);
 
-    const lpResult = await this.solanaService.createLP(
+    const lpResult = await this.solanaService.createLPAndAtas(
       vaultResult.vaultPdaAddress,
+      new PublicKey(dto.platfromLp),
     );
 
     const params: CreateMetadataParams = {

@@ -1,7 +1,7 @@
 import { BN } from '@coral-xyz/anchor';
 import { PublicKey } from '@solana/web3.js';
 
-export type CreateDepositDto = {
+export type CreateDepositTransactionDto = {
   protocolIndex: number;
   vaultId: PublicKey;
   amount: BN;

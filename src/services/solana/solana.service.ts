@@ -17,6 +17,7 @@ import {
   getMintLen,
   createInitializeNonTransferableMintInstruction,
   createInitializeMint2Instruction,
+  getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token';
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
@@ -168,8 +169,9 @@ export class SolanaService {
     };
   }
 
-  async createLP(
-    mintAuthority: PublicKey,
+  async createLPAndAtas(
+    authority: PublicKey,
+    platformLp: PublicKey,
     mintKeypair: Keypair = Keypair.generate(),
   ) {
     const extensions = [ExtensionType.NonTransferable];
@@ -194,8 +196,8 @@ export class SolanaService {
     const initializeMintIx = createInitializeMint2Instruction(
       mintKeypair.publicKey,
       6,
-      mintAuthority,
-      mintAuthority,
+      authority,
+      authority,
       TOKEN_2022_PROGRAM_ID,
     );
 
@@ -211,10 +213,26 @@ export class SolanaService {
       [this.master, mintKeypair],
     );
 
+    // backyard vault <-> backyard lp
+    await getOrCreateAssociatedTokenAccount(
+      this.connection,
+      this.master,
+      mintKeypair.publicKey,
+      authority,
+    );
+
+    // backyard vault <-> platform underlying lp
+    await getOrCreateAssociatedTokenAccount(
+      this.connection,
+      this.master,
+      platformLp,
+      authority,
+    );
+
     return {
       signature,
       mint: mintKeypair.publicKey.toBase58(),
-      authority: mintAuthority.toBase58(),
+      authority: authority.toBase58(),
     };
   }
 
