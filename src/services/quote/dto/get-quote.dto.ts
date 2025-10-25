@@ -1,22 +1,30 @@
 import {
-  ArrayMinSize,
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
   IsString,
+  IsNotEmpty,
+  IsArray,
+  ArrayMinSize,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class VaultDepositDto {
+  @IsString()
+  @IsNotEmpty()
+  vaultId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  amount: string;
+}
 
 export class GetQuoteDto {
   @IsString()
   @IsNotEmpty()
   walletAddress: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  amount: number;
-
   @IsArray()
   @ArrayMinSize(1)
-  @IsString({ each: true })
-  vaultIds: string[];
+  @ValidateNested({ each: true })
+  @Type(() => VaultDepositDto)
+  deposits: VaultDepositDto[];
 }

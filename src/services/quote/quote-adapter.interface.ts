@@ -11,5 +11,6 @@ export interface QuoteAdapter {
   fetchQuote(
     vaultData: VaultData,
     walletAddress: PublicKey,
+    amount: string,
   ): Promise<QuoteVaultDto>;
 }

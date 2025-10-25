@@ -13,13 +13,14 @@ export class JupiterQuoteAdapter implements QuoteAdapter {
   async fetchQuote(
     vaultData: VaultData,
     walletAddress: PublicKey,
+    amount: string,
   ): Promise<QuoteVaultDto> {
-    const vaultId = vaultData?.id ?? 'vault-uuid-1';
+    const vaultId = vaultData.id;
 
     const dto: QuoteVaultDto = {
       vaultId,
       platform: VaultPlatform.Jupiter,
-      amount: '1000000',
+      amount,
       accounts: {
         inputToken: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         lpToken: 'LPmint111111111111111111111111111111111111',

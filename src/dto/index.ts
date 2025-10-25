@@ -30,7 +30,7 @@ export class CreateVaultDto {
 
   @IsString()
   @ApiProperty()
-  symbol: string;
+  lpSymbol: string;
 
   @IsString()
   @ApiProperty()

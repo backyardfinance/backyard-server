@@ -13,7 +13,9 @@ export class QuoteService {
   ) {}
 
   async getQuote(dto: GetQuoteDto) {
-    const { walletAddress, vaultIds } = dto;
+    const { walletAddress, deposits } = dto;
+
+    const vaultIds = deposits.map((d) => d.vaultId);
 
     const vaults = await this.db.vault.findMany({
       where: {
@@ -27,10 +29,16 @@ export class QuoteService {
       throw new Error('No vaults found');
     }
 
+    const amountMap = new Map(deposits.map((d) => [d.vaultId, d.amount]));
+
     const quotes = await Promise.all(
-      vaults.map((vault) =>
-        this.fetchVaultQuote(vault, new PublicKey(walletAddress)),
-      ),
+      vaults.map((vault) => {
+        return this.fetchVaultQuote(
+          vault,
+          new PublicKey(walletAddress),
+          amountMap.get(vault.id),
+        );
+      }),
     );
 
     return {
@@ -39,9 +47,13 @@ export class QuoteService {
     };
   }
 
-  private async fetchVaultQuote(vault: any, walletAddress: PublicKey) {
+  private async fetchVaultQuote(
+    vault: any,
+    walletAddress: PublicKey,
+    amount: string,
+  ) {
     const adapter = this.getAdapter(vault.platform);
-    return adapter.fetchQuote(vault, walletAddress);
+    return adapter.fetchQuote(vault, walletAddress, amount);
   }
 
   private getAdapter(platform: VaultPlatform) {

@@ -117,7 +117,12 @@ export class SolanaService {
     }));
   }
 
-  async createVault(protocolName: VaultPlatform) {
+  async createVault(
+    protocolName: VaultPlatform,
+    ourLp: string,
+    protocolLp: string,
+    inputToken: string,
+  ) {
     // vault id = public key; in db it's a public_key field
     const vaultId = Keypair.generate().publicKey;
 
@@ -154,6 +159,9 @@ export class SolanaService {
         current_tvl: 0,
         current_apy: 0,
         platform: protocolName,
+        our_lp_mint: ourLp,
+        protocol_lp_mint: protocolLp,
+        input_token_mint: inputToken,
       },
     });
 
