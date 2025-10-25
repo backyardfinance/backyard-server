@@ -6,7 +6,11 @@ import { CronJobsService } from './cron-jobs/cron-jobs.service';
 import { JupiterApiService } from './jupiter-api/jupiter-api.service';
 import { KaminoApiService } from './kamino-service/kamino-api.service';
 import { VaultService } from './vault/vault.service';
-import { DepositService } from './deposit/deposit.service';
+import { TransactionService } from './transaction/transaction.service';
+import { JupiterBuilder } from './transaction/builders/jupiter.builder';
+import { BuilderFactory } from './transaction/builders/builder.factory';
+import { QuoteService } from './quote/quote.service';
+import { JupiterQuoteAdapter } from './quote/adapters/jupiter-quote.adapter';
 
 @Module({
   imports: [DatabaseModule],
@@ -17,8 +21,18 @@ import { DepositService } from './deposit/deposit.service';
     JupiterApiService,
     KaminoApiService,
     VaultService,
-    DepositService,
+    TransactionService,
+    JupiterBuilder,
+    BuilderFactory,
+    QuoteService,
+    JupiterQuoteAdapter,
   ],
-  exports: [SolanaService, MetaplexService, VaultService, DepositService],
+  exports: [
+    SolanaService,
+    MetaplexService,
+    VaultService,
+    TransactionService,
+    QuoteService,
+  ],
 })
 export class ServicesModule {}

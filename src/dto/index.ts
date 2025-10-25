@@ -21,6 +21,9 @@ export class CreateVaultDto {
   @ApiProperty()
   platfromLp: string;
 
+  @ApiProperty()
+  platformVaultInputToken: string;
+
   @IsString()
   @ApiProperty()
   lpName: string;

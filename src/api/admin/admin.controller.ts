@@ -20,6 +20,7 @@ export class AdminController {
 
     const lpResult = await this.solanaService.createLPAndAtas(
       vaultResult.vaultPdaAddress,
+      new PublicKey(dto.platformVaultInputToken),
       new PublicKey(dto.platfromLp),
     );
 

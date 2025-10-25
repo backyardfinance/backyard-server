@@ -4,7 +4,8 @@ import { SolanaController } from './solana/solana.controller';
 import { DatabaseModule } from '../database';
 import { AdminController } from './admin/admin.controller';
 import { VaultController } from './vault/vault.controller';
-import { DepositController } from './deposit/deposit.controller';
+import { TransactionController } from './transaction/transaction.controller';
+import { QuoteController } from './quote/quote.controller';
 
 @Module({
   imports: [ServicesModule, DatabaseModule],
@@ -12,7 +13,8 @@ import { DepositController } from './deposit/deposit.controller';
     SolanaController,
     AdminController,
     VaultController,
-    DepositController,
+    TransactionController,
+    QuoteController,
   ],
   providers: [],
 })
