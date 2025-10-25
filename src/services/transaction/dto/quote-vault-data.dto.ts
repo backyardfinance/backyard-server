@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { IsString, IsEnum, IsNotEmpty, ValidateNested } from 'class-validator';
 import { VaultPlatform } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { JupiterAccountsDto } from './jupiter-accounts.dto';
@@ -13,6 +7,10 @@ export class QuoteVaultDataDto {
   @IsString()
   @IsNotEmpty()
   vaultId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  vaultPubkey: string;
 
   @IsEnum(VaultPlatform)
   platform: VaultPlatform;

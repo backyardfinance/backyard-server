@@ -25,6 +25,8 @@ import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
 import axios from 'axios';
 import { TokenInfoResponse, VaultPlatform } from '../../dto';
+import { BackyardPrograms } from 'src/idls/backyard_programs';
+import { Program } from '@coral-xyz/anchor';
 
 const PROGRAM_ID = new PublicKey(
   process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
@@ -33,7 +35,7 @@ const PROGRAM_ID = new PublicKey(
 @Injectable()
 export class SolanaService {
   readonly connection: Connection;
-  readonly program: anchor.Program;
+  readonly program: Program<BackyardPrograms>;
   readonly master?: Keypair;
 
   constructor(

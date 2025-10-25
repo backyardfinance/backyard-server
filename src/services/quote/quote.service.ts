@@ -3,7 +3,8 @@ import { JupiterQuoteAdapter } from './adapters/jupiter-quote.adapter';
 import { GetQuoteDto } from './dto/get-quote.dto';
 import { DatabaseService } from 'src/database';
 import { PublicKey } from '@solana/web3.js';
-import { VaultPlatform } from '@prisma/client';
+import { Vault, VaultPlatform } from '@prisma/client';
+import { VaultData } from './quote-adapter.interface';
 
 @Injectable()
 export class QuoteService {
@@ -48,7 +49,7 @@ export class QuoteService {
   }
 
   private async fetchVaultQuote(
-    vault: any,
+    vault: Vault,
     walletAddress: PublicKey,
     amount: string,
   ) {

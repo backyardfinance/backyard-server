@@ -2,6 +2,7 @@ import { VaultPlatform } from '@prisma/client';
 
 export class QuoteVaultDto {
   vaultId: string;
+  vaultPubkey: string;
   platform: VaultPlatform;
   amount: string;
   accounts: any;

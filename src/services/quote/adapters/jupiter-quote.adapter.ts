@@ -1,41 +1,56 @@
 import { Connection, PublicKey } from '@solana/web3.js';
 import { QuoteVaultDto } from '../dto/quote-response.dto';
-import { QuoteAdapter, VaultData } from '../quote-adapter.interface';
+import { QuoteAdapter } from '../quote-adapter.interface';
 import { Injectable } from '@nestjs/common';
-import { VaultPlatform } from '@prisma/client';
+import { Vault, VaultPlatform } from '@prisma/client';
+// @ts-ignore
+import { getDepositContext } from '@jup-ag/lend/earn';
 
 @Injectable()
 export class JupiterQuoteAdapter implements QuoteAdapter {
   private readonly connection: Connection;
 
-  constructor() {}
+  constructor() {
+    const rpc = 'https://solana-mainnet.gateway.tatum.io';
+    this.connection = new Connection(rpc, 'confirmed');
+  }
 
   async fetchQuote(
-    vaultData: VaultData,
+    vaultData: Vault,
     walletAddress: PublicKey,
     amount: string,
   ): Promise<QuoteVaultDto> {
     const vaultId = vaultData.id;
+    const vaultPubkey = vaultData.public_key;
+    const ourVaultLp = vaultData.our_lp_mint;
+    const inputVaultToken = vaultData.input_token_mint;
+
+    const depositContext = await getDepositContext({
+      asset: new PublicKey(inputVaultToken),
+      signer: walletAddress,
+      connection: this.connection,
+    });
 
     const dto: QuoteVaultDto = {
       vaultId,
+      vaultPubkey,
       platform: VaultPlatform.Jupiter,
       amount,
       accounts: {
-        inputToken: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        lpToken: 'LPmint111111111111111111111111111111111111',
-        fTokenMint: 'FToken111111111111111111111111111111111111',
-        jupiterVault: 'Vault1111111111111111111111111111111111111',
-        lending: 'Lending11111111111111111111111111111111111',
-        lendingAdmin: 'Admin1111111111111111111111111111111111111',
-        rewardsRateModel: 'Rewards1111111111111111111111111111111111',
+        inputToken: inputVaultToken,
+        lpToken: ourVaultLp,
+        fTokenMint: depositContext.fTokenMint.toString(),
+        jupiterVault: depositContext.vault.toString(),
+        lending: depositContext.lending.toString(),
+        lendingAdmin: depositContext.lendingAdmin.toString(),
+        rewardsRateModel: depositContext.rewardsRateModel.toString(),
         lendingSupplyPositionOnLiquidity:
-          'Position111111111111111111111111111111111',
-        liquidity: 'Liquidity111111111111111111111111111111111',
-        liquidityProgram: 'Program11111111111111111111111111111111111',
-        rateModel: 'RateModel1111111111111111111111111111111',
+          depositContext.lendingSupplyPositionOnLiquidity.toString(),
+        liquidity: depositContext.liquidity.toString(),
+        liquidityProgram: depositContext.liquidityProgram.toString(),
+        rateModel: depositContext.rateModel.toString(),
         supplyTokenReservesLiquidity:
-          'Reserves11111111111111111111111111111111111',
+          depositContext.supplyTokenReservesLiquidity.toString(),
       },
     };
 

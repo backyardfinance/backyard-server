@@ -18,10 +18,11 @@ import {
 import idl from '../../../idls/backyard_programs.json';
 import { JupiterAccountsDto } from '../dto/jupiter-accounts.dto';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { BackyardPrograms } from 'src/idls/backyard_programs';
 
 @Injectable()
 export class JupiterBuilder implements ProtocolBuilder {
-  private readonly program: Program;
+  private readonly program: Program<BackyardPrograms>;
   private readonly connection: Connection;
 
   constructor() {
@@ -44,15 +45,17 @@ export class JupiterBuilder implements ProtocolBuilder {
     this.connection = new Connection(rpc, 'confirmed');
   }
 
-  buildInstruction(
+  async buildInstruction(
     data: QuoteVaultDataDto,
     signer: PublicKey,
   ): Promise<TransactionInstruction> {
-    const { vaultId, amount, accounts } = data;
+    const { vaultPubkey, amount, accounts } = data;
     const jupiterAccounts = accounts as JupiterAccountsDto;
 
+    console.log('Jupiter accounts:', jupiterAccounts);
+
     return this.program.methods
-      .deposit(vaultId, new BN(amount))
+      .deposit(new PublicKey(vaultPubkey), new BN(amount))
       .accounts({
         signer: signer,
         inputToken: new PublicKey(jupiterAccounts.inputToken),

@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ExceptionFilter } from './utils';
 import { ConfigService } from './config/config.module';
 import * as TR from './test_runner';
-import { testSeedDb } from './test_seed_db';
+// import { testSeedDb } from './test_seed_db';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -43,7 +43,7 @@ async function bootstrap() {
   );
 
   if (configService.get('app_test_mode')) {
-    await testSeedDb(app);
+    // await testSeedDb(app);
     await TR.testMain(app);
   }
 }

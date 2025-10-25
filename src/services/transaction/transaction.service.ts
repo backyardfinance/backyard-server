@@ -12,7 +12,7 @@ import { QuoteVaultDataDto } from './dto/quote-vault-data.dto';
 
 @Injectable()
 export class TransactionService {
-  private connection: Connection;
+  private readonly connection: Connection;
 
   constructor(private readonly builderFactory: BuilderFactory) {
     // TODO: create a provider
