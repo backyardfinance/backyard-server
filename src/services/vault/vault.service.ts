@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Connection, Keypair } from '@solana/web3.js';
-import * as anchor from '@coral-xyz/anchor';
-import { ConfigService } from '../../config/config.module';
 import { DatabaseService } from '../../database';
 import { Vault, VaultHistory } from '@prisma/client';
-import { VaultHistoryInfoResponse, VaultInfoResponse } from '../../dto';
+import {
+  VaultHistoryInfoResponse,
+  VaultInfoResponse,
+  VaultInfoStrategyResponse,
+} from '../../dto';
 
 @Injectable()
 export class VaultService {
-  constructor(
-    private readonly config: ConfigService,
-    private readonly db: DatabaseService,
-  ) {}
+  constructor(private readonly db: DatabaseService) {}
 
   async getVaults(): Promise<VaultInfoResponse[]> {
     const vaults = await this.db.vault.findMany();
@@ -29,6 +27,11 @@ export class VaultService {
     );
   }
 
+  async getVaultUserInfo(
+    vaultId: string,
+    strategyId: string,
+  ): Promise<VaultInfoStrategyResponse> {}
+
   private mapVaultToVaultInfoResponse(vault: Vault): VaultInfoResponse {
     return {
       id: vault.id,
@@ -36,8 +39,8 @@ export class VaultService {
       name: vault.name,
       apy: Number(vault.current_apy),
       tvl: Number(vault.current_tvl),
-      asset_price: Number(vault.current_asset_price),
-      yard_reward: Number(vault.current_yard_reward),
+      assetPrice: Number(vault.current_asset_price),
+      yardReward: Number(vault.current_yard_reward),
     };
   }
 
@@ -45,11 +48,11 @@ export class VaultService {
     vaultHisory: VaultHistory,
   ): VaultHistoryInfoResponse {
     return {
-      recorded_at: vaultHisory.recorded_at,
+      recordedAt: vaultHisory.recorded_at,
       apy: Number(vaultHisory.apy),
       tvl: Number(vaultHisory.tvl),
-      asset_price: Number(vaultHisory.asset_price),
-      yard_reward: Number(vaultHisory.yard_reward),
+      assetPrice: Number(vaultHisory.asset_price),
+      yardReward: Number(vaultHisory.yard_reward),
     };
   }
 }

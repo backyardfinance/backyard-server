@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsNumber,
   IsNumberString,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -34,13 +35,13 @@ export class CreateVaultDto {
 export class CreateStrategyDto {
   @IsString()
   @ApiProperty()
-  vaultId!: string;
-  @IsNumber()
-  @ApiProperty()
-  deposited_amount: number;
+  name: string;
   @IsString()
   @ApiProperty()
   userId!: string;
+  @IsObject()
+  @ApiProperty()
+  vaultDeposits: Record<string, number>;
 }
 
 export class QuoteDepositDto {
@@ -107,9 +108,9 @@ export interface TokenAmount {
 
 export interface VaultInfo {
   apy: number;
-  asset_price: number;
+  assetPrice: number;
   tvl: number;
-  yard_reward: number;
+  yardReward: number;
 }
 
 export interface VaultInfoResponse extends VaultInfo {
@@ -119,5 +120,31 @@ export interface VaultInfoResponse extends VaultInfo {
 }
 
 export interface VaultHistoryInfoResponse extends VaultInfo {
-  recorded_at: Date;
+  recordedAt: Date;
+}
+
+export interface VaultInfoStrategyResponse extends VaultInfoResponse {
+  strategies: UserStrategyInfoResponse[];
+}
+
+export interface UserStrategyInfoResponse {
+  strategyId: string;
+}
+
+export interface StrategyVaultInfo {
+  id: string;
+  name: string;
+  platform: string;
+  tvl: number;
+  apy: number;
+  depositedAmount: number;
+}
+
+export interface StrategyInfoResponse {
+  strategyName: string;
+  strategyId: string;
+  strategyApy: number;
+  strategyDepositedAmount: number;
+  strategyTvl: number;
+  vaults: StrategyVaultInfo[];
 }

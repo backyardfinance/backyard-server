@@ -10,8 +10,16 @@ export class VaultController {
     return this.vaultService.getVaults();
   }
 
-  @Get('/:vaultId')
-  async getStrategies(@Param('vaultId') vaultId: string) {
+  @Get('/history/:vaultId')
+  async getVaultHistory(@Param('vaultId') vaultId: string) {
     return this.vaultService.getVaultHistory(vaultId);
+  }
+
+  @Get('/:userId/:vaultId')
+  async getVault(
+    @Param('userId') userId: string,
+    @Param('vaultId') vaultId: string,
+  ) {
+    return this.vaultService.getVaultUserInfo(userId, vaultId);
   }
 }
