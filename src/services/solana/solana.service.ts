@@ -83,7 +83,6 @@ export class SolanaService {
     const strategy = await this.db.strategy.create({
       data: {
         // deposited_amount: deposited_amount,
-        current_price: 0,
         user_id: userId,
       },
     });
@@ -102,20 +101,6 @@ export class SolanaService {
 
     // map return data
     return strategy as Strategy;
-  }
-
-  async getStrategies(userId: string) {
-    console.log('userId: ', userId);
-    const strategies = await this.db.strategy.findMany({
-      where: {
-        user_id: userId,
-      },
-    });
-    return strategies.map((v) => ({
-      ...v,
-      // deposited_amount: parseFloat(v.deposited_amount.toString()),
-      current_price: parseFloat(v.current_price.toString()),
-    }));
   }
 
   async createVault(protocolName: VaultPlatform) {

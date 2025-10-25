@@ -29,13 +29,6 @@ export class SolanaController {
     );
   }
 
-  // add - arr of vaults with vaultId and alloc percentage
-  // add postion metric
-  @Get('strategies/:userId')
-  async getStrategies(@Param('userId') userId: string) {
-    return await this.solanaService.getStrategies(userId);
-  }
-
   @Get('/user-tokens/:userId')
   async getUserTokens(@Param('userId') userId: string) {
     return await this.solanaService.getUserTokens(userId);
