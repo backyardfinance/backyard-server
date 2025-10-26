@@ -10,5 +10,19 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+  backyard-server:
+    build:
+      context: .
+      args:
+        ENV: ${ENV}
+        RPC_URL: ${RPC_URL}
+        PROGRAM_ID: ${PROGRAM_ID}
+        MASTER_WALLET_PRIVATE_KEY: ${MASTER_WALLET_PRIVATE_KEY}
+        DATABASE_URL: ${DATABASE_URL}
+        PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
 volumes:
   pgdata:

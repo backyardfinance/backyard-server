@@ -34,9 +34,9 @@ model Vault {
   public_key       String        @unique
   name             String
   platform         VaultPlatform
-  our_lp_mint      String
-  protocol_lp_mint String
-  input_token_mint String
+  input_token_mint String?
+  our_lp_mint      String?
+  protocol_lp_mint String?
 
   current_tvl         Decimal @default(0) @db.Decimal(38, 18)
   current_apy         Decimal @default(0) @db.Decimal(38, 18)
