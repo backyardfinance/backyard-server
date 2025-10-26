@@ -1,8 +1,10 @@
 import {
   IsBoolean,
+  IsDate,
   IsEnum,
   IsNumber,
   IsNumberString,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -40,13 +42,24 @@ export class CreateVaultDto {
 export class CreateStrategyDto {
   @IsString()
   @ApiProperty()
-  vaultId!: string;
-  @IsNumber()
-  @ApiProperty()
-  deposited_amount: number;
+  name: string;
   @IsString()
   @ApiProperty()
   userId!: string;
+  @IsObject()
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: {
+      type: 'number',
+      example: 100,
+    },
+    example: {
+      vault_1: 500,
+      vault_2: 1200,
+    },
+    description: 'Record of vaultId -> deposited amount',
+  })
+  vaultDeposits: Record<string, number>;
 }
 
 export class QuoteDepositDto {
@@ -111,19 +124,105 @@ export interface TokenAmount {
   uiAmountString: string;
 }
 
-export interface VaultInfo {
+export class VaultInfo {
+  @IsNumber()
+  @ApiProperty()
   apy: number;
-  asset_price: number;
+  @IsNumber()
+  @ApiProperty()
+  assetPrice: number;
+  @IsNumber()
+  @ApiProperty()
   tvl: number;
-  yard_reward: number;
+  @IsNumber()
+  @ApiProperty()
+  yardReward: number;
 }
 
-export interface VaultInfoResponse extends VaultInfo {
+export class VaultInfoResponse extends VaultInfo {
+  @IsString()
+  @ApiProperty()
   id: string;
+  @IsString()
+  @ApiProperty()
   name: string;
+  @IsString()
+  @ApiProperty()
   platform: string;
 }
 
-export interface VaultHistoryInfoResponse extends VaultInfo {
-  recorded_at: Date;
+export class VaultHistoryInfoResponse extends VaultInfo {
+  @IsDate()
+  @ApiProperty()
+  recordedAt: Date;
+}
+
+export class UserStrategyInfoResponse {
+  @IsString()
+  @ApiProperty()
+  strategyId: string;
+  @IsString()
+  @ApiProperty()
+  strategyName: string;
+  @IsNumber()
+  @ApiProperty()
+  depositedAmount: number;
+  @IsNumber()
+  @ApiProperty()
+  interestEarned: number;
+  @IsNumber()
+  @ApiProperty()
+  vaultWeight: number;
+}
+
+export class VaultInfoStrategyResponse extends VaultInfoResponse {
+  @ApiProperty({
+    type: [UserStrategyInfoResponse],
+    description: 'List of user strategies connected to this vault',
+  })
+  strategies: UserStrategyInfoResponse[];
+}
+
+export class StrategyVaultInfo {
+  @IsString()
+  @ApiProperty()
+  id: string;
+  @IsString()
+  @ApiProperty()
+  name: string;
+  @IsString()
+  @ApiProperty()
+  platform: string;
+  @IsNumber()
+  @ApiProperty()
+  tvl: number;
+  @IsNumber()
+  @ApiProperty()
+  apy: number;
+  @IsNumber()
+  @ApiProperty()
+  depositedAmount: number;
+}
+
+export class StrategyInfoResponse {
+  @IsString()
+  @ApiProperty()
+  strategyName: string;
+  @IsString()
+  @ApiProperty()
+  strategyId: string;
+  @IsNumber()
+  @ApiProperty()
+  strategyApy: number;
+  @IsNumber()
+  @ApiProperty()
+  strategyDepositedAmount: number;
+  @IsNumber()
+  @ApiProperty()
+  strategyTvl: number;
+  @ApiProperty({
+    type: [StrategyVaultInfo],
+    description: 'List of vaults that is used in this strategy',
+  })
+  vaults: StrategyVaultInfo[];
 }

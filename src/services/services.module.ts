@@ -11,6 +11,7 @@ import { JupiterBuilder } from './transaction/builders/jupiter.builder';
 import { BuilderFactory } from './transaction/builders/builder.factory';
 import { QuoteService } from './quote/quote.service';
 import { JupiterQuoteAdapter } from './quote/adapters/jupiter-quote.adapter';
+import { StrategyService } from './strategy/strategy.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -34,5 +35,8 @@ import { JupiterQuoteAdapter } from './quote/adapters/jupiter-quote.adapter';
     TransactionService,
     QuoteService,
   ],
+    StrategyService,
+  ],
+  exports: [SolanaService, MetaplexService, VaultService, StrategyService],
 })
 export class ServicesModule {}

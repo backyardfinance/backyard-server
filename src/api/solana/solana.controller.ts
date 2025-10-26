@@ -19,23 +19,6 @@ export class SolanaController {
   // for interest earned -> query underlying vault for LP token and get its price with CRON
   // EASY -> total_pos -> deposited + interest earned
 
-  // make arr of vaults and dep amount
-  @Post('strategy/create')
-  async createStrategy(@Body() dto: CreateStrategyDto): Promise<Strategy> {
-    return await this.solanaService.createStrategy(
-      dto.vaultId,
-      dto.deposited_amount,
-      dto.userId,
-    );
-  }
-
-  // add - arr of vaults with vaultId and alloc percentage
-  // add postion metric
-  @Get('strategies/:userId')
-  async getStrategies(@Param('userId') userId: string) {
-    return await this.solanaService.getStrategies(userId);
-  }
-
   @Get('/user-tokens/:userId')
   async getUserTokens(@Param('userId') userId: string) {
     return await this.solanaService.getUserTokens(userId);
