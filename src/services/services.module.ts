@@ -27,6 +27,7 @@ import { StrategyService } from './strategy/strategy.service';
     BuilderFactory,
     QuoteService,
     JupiterQuoteAdapter,
+    StrategyService,
   ],
   exports: [
     SolanaService,
@@ -34,9 +35,7 @@ import { StrategyService } from './strategy/strategy.service';
     VaultService,
     TransactionService,
     QuoteService,
-  ],
     StrategyService,
   ],
-  exports: [SolanaService, MetaplexService, VaultService, StrategyService],
 })
 export class ServicesModule {}

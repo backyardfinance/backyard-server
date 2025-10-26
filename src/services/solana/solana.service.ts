@@ -76,56 +76,12 @@ export class SolanaService {
     console.log(kp.publicKey.toBase58());
   }
 
-  async createStrategy(
-    vaultId: string,
-    deposited_amount: number,
-    userId: string,
-  ): Promise<Strategy> {
-    const strategy = await this.db.strategy.create({
-      data: {
-        // deposited_amount: deposited_amount,
-        current_price: 0,
-        user_id: userId,
-      },
-    });
-
-    await this.db.vaultStartegy.create({
-      data: {
-        strategy_id: strategy.id,
-        vault_id: vaultId,
-        deposited_amount: deposited_amount,
-        // api call
-        deposited_amount_usd: deposited_amount,
-        interest_earned: 0,
-        interest_earned_usd: 0,
-      },
-    });
-
-    // map return data
-    return strategy as Strategy;
-  }
-
-  async getStrategies(userId: string) {
-    console.log('userId: ', userId);
-    const strategies = await this.db.strategy.findMany({
-      where: {
-        user_id: userId,
-      },
-    });
-    return strategies.map((v) => ({
-      ...v,
-      // deposited_amount: parseFloat(v.deposited_amount.toString()),
-      current_price: parseFloat(v.current_price.toString()),
-    }));
-  }
-
   async createVault(
     protocolName: VaultPlatform,
     ourLp: string,
     protocolLp: string,
     inputToken: string,
   ) {
-  async createVault(protocolName: VaultPlatform) {
     // vault id = public key; in db it's a public_key field
     const vaultId = Keypair.generate().publicKey;
 
