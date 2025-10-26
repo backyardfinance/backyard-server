@@ -9,12 +9,14 @@ import {
 } from '@nestjs/common';
 import { StrategyService } from '../../services/strategy/strategy.service';
 import { CreateStrategyDto, StrategyInfoResponse } from '../../dto';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('strategies')
 export class StrategyController {
   constructor(private readonly strategyService: StrategyService) {}
 
   @Get('/user/:userId')
+  @ApiOkResponse({ type: StrategyInfoResponse })
   async getStrategies(
     @Param('userId') userId: string,
   ): Promise<StrategyInfoResponse[]> {
@@ -22,6 +24,7 @@ export class StrategyController {
   }
 
   @Get('/:strategyId')
+  @ApiOkResponse({ type: StrategyInfoResponse })
   async getStrategy(
     @Param('strategyId') strategyId: string,
   ): Promise<StrategyInfoResponse> {
