@@ -8,7 +8,7 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
-import { BACKYARD_PROGRAMS_IDL } from '../../idl';
+import idl from '../../idls/backyard_programs.json';
 import { ConfigService } from '../../config/config.module';
 import {
   TOKEN_PROGRAM_ID,
@@ -17,11 +17,16 @@ import {
   getMintLen,
   createInitializeNonTransferableMintInstruction,
   createInitializeMint2Instruction,
+  getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
+  createAssociatedTokenAccountInstruction,
 } from '@solana/spl-token';
 import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
 import axios from 'axios';
 import { TokenInfoResponse, VaultPlatform } from '../../dto';
+import { BackyardPrograms } from 'src/idls/backyard_programs';
+import { Program } from '@coral-xyz/anchor';
 
 const PROGRAM_ID = new PublicKey(
   process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
@@ -30,7 +35,7 @@ const PROGRAM_ID = new PublicKey(
 @Injectable()
 export class SolanaService {
   readonly connection: Connection;
-  readonly program: anchor.Program;
+  readonly program: Program<BackyardPrograms>;
   readonly master?: Keypair;
 
   constructor(
@@ -55,7 +60,7 @@ export class SolanaService {
     });
 
     this.program = new anchor.Program(
-      BACKYARD_PROGRAMS_IDL as anchor.Idl,
+      idl as anchor.Idl,
       provider as anchor.Provider,
     );
 
@@ -65,17 +70,18 @@ export class SolanaService {
       this.master = Keypair.fromSecretKey(secret);
     }
 
-    console.log('vaultId: ', Keypair.generate().publicKey);
-
-    console.log('MASTER pubkey =', this.master?.publicKey.toBase58());
-
     const kp = Keypair.fromSecretKey(
       Uint8Array.from(JSON.parse(process.env.MASTER_WALLET_PRIVATE_KEY!)),
     );
     console.log(kp.publicKey.toBase58());
   }
 
-  async createVault(protocolName: VaultPlatform) {
+  async createVault(
+    protocolName: VaultPlatform,
+    ourLp: string,
+    protocolLp: string,
+    inputToken: string,
+  ) {
     // vault id = public key; in db it's a public_key field
     const vaultId = Keypair.generate().publicKey;
 
@@ -112,6 +118,9 @@ export class SolanaService {
         current_tvl: 0,
         current_apy: 0,
         platform: protocolName,
+        our_lp_mint: ourLp,
+        protocol_lp_mint: protocolLp,
+        input_token_mint: inputToken,
       },
     });
 
@@ -129,8 +138,10 @@ export class SolanaService {
     };
   }
 
-  async createLP(
-    mintAuthority: PublicKey,
+  async createLPAndAtas(
+    authority: PublicKey,
+    platformVaultInputToken: PublicKey,
+    platformLp: PublicKey,
     mintKeypair: Keypair = Keypair.generate(),
   ) {
     const extensions = [ExtensionType.NonTransferable];
@@ -155,8 +166,53 @@ export class SolanaService {
     const initializeMintIx = createInitializeMint2Instruction(
       mintKeypair.publicKey,
       6,
-      mintAuthority,
-      mintAuthority,
+      authority,
+      authority,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const ata1 = getAssociatedTokenAddressSync(
+      mintKeypair.publicKey,
+      authority,
+      false,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const ata2 = getAssociatedTokenAddressSync(
+      platformLp,
+      authority,
+      false,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const ata3 = getAssociatedTokenAddressSync(
+      platformVaultInputToken,
+      authority,
+      false,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const createAta1Ix = createAssociatedTokenAccountInstruction(
+      this.master.publicKey,
+      ata1,
+      authority,
+      mintKeypair.publicKey,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const createAta2Ix = createAssociatedTokenAccountInstruction(
+      this.master.publicKey,
+      ata2,
+      authority,
+      platformLp,
+      TOKEN_2022_PROGRAM_ID,
+    );
+
+    const createAta3Ix = createAssociatedTokenAccountInstruction(
+      this.master.publicKey,
+      ata3,
+      authority,
+      platformVaultInputToken,
       TOKEN_2022_PROGRAM_ID,
     );
 
@@ -164,6 +220,9 @@ export class SolanaService {
       createAccountIx,
       initializeNonTransferableIx,
       initializeMintIx,
+      createAta1Ix,
+      createAta2Ix,
+      createAta3Ix,
     );
 
     const signature = await sendAndConfirmTransaction(
@@ -175,7 +234,12 @@ export class SolanaService {
     return {
       signature,
       mint: mintKeypair.publicKey.toBase58(),
-      authority: mintAuthority.toBase58(),
+      authority: authority.toBase58(),
+      atas: {
+        backyardLp: ata1.toBase58(),
+        platformLp: ata2.toBase58(),
+        inputToken: ata3.toBase58(),
+      },
     };
   }
 

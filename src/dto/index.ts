@@ -20,13 +20,19 @@ export class CreateVaultDto {
   @ApiProperty({ enum: VaultPlatform, example: VaultPlatform.Jupiter })
   platform: VaultPlatform;
 
+  @ApiProperty()
+  platfromLp: string;
+
+  @ApiProperty()
+  platformVaultInputToken: string;
+
   @IsString()
   @ApiProperty()
   lpName: string;
 
   @IsString()
   @ApiProperty()
-  symbol: string;
+  lpSymbol: string;
 
   @IsString()
   @ApiProperty()

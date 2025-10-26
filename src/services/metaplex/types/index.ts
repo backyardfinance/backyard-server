@@ -1,6 +1,6 @@
 export type CreateMetadataParams = {
   mint: string;
-  name: string;
-  symbol: string;
+  lpName: string;
+  lpSymbol: string;
   uri: string;
 };

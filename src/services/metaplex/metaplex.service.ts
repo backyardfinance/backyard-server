@@ -33,7 +33,7 @@ export class MetaplexService {
   }
 
   async uploadToken2022Meta(params: CreateMetadataParams) {
-    const { mint, name, symbol, uri } = params;
+    const { mint, lpName, lpSymbol, uri } = params;
 
     const umi = createUmi(this.connection.rpcEndpoint);
     umi.use(mplTokenMetadata());
@@ -42,8 +42,8 @@ export class MetaplexService {
 
     const result = await createV1(umi, {
       mint: publicKey(mint),
-      name,
-      symbol,
+      name: lpName,
+      symbol: lpSymbol,
       uri,
       sellerFeeBasisPoints: percentAmount(0),
       splTokenProgram: this.SPL_TOKEN_2022_PROGRAM_ID,
