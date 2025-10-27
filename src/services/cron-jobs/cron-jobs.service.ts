@@ -15,7 +15,7 @@ export class CronJobsService {
     // await this.categoriesService.parseCategoriesToDataBase();
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   public async updateEveryHour() {
     await this.kaminoService.upsertVaultsFromApi();
     await this.jupiterApiService.upsertVaultsFromApi();
