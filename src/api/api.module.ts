@@ -7,6 +7,7 @@ import { VaultController } from './vault/vault.controller';
 import { TransactionController } from './transaction/transaction.controller';
 import { QuoteController } from './quote/quote.controller';
 import { StrategyController } from './strategy/strategy.controller';
+import { UserController } from './user/user.controller';
 
 @Module({
   imports: [ServicesModule, DatabaseModule],
@@ -17,6 +18,7 @@ import { StrategyController } from './strategy/strategy.controller';
     TransactionController,
     QuoteController,
     StrategyController,
+    UserController,
   ],
   providers: [],
 })
