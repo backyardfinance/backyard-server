@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { CreateVaultDto, UsertInfoResponse } from 'src/dto';
+import { CreateVaultDto, UsertInfoResponse, CreateUserDto } from 'src/dto';
 import { MetaplexService } from 'src/services/metaplex/metaplex.service';
 import { CreateMetadataParams } from 'src/services/metaplex/types';
 import { SolanaService } from 'src/services/solana/solana.service';
 import { DatabaseService } from '../../database';
+import { UserService } from '../../services/user/user.service';
 
 @Controller('admin')
 @ApiTags('admin')
@@ -14,6 +15,7 @@ export class AdminController {
     private readonly solanaService: SolanaService,
     private readonly metaplexService: MetaplexService,
     private readonly db: DatabaseService,
+    private readonly userService: UserService,
   ) {}
 
   @Get('/users')
@@ -27,7 +29,12 @@ export class AdminController {
     }));
   }
 
-  @Post('create-vault')
+  @Post('create-user')
+  async createUser(@Body() dto: CreateUserDto) {
+    return await this.userService.createUser(dto);
+  }
+
+  /*@Post('create-vault')
   async createVault(@Body() dto: CreateVaultDto) {
     const ourLpMint = Keypair.generate();
     const { platform, platfromLp, platformVaultInputToken } = dto;
@@ -59,5 +66,5 @@ export class AdminController {
       lpResult,
       metaResult,
     };
-  }
+  }*/
 }

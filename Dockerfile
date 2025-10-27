@@ -29,4 +29,4 @@ ENV DATABASE_URL=${DATABASE_URL}
 ENV PORT=4000
 
 # Start the application
-ENTRYPOINT yarn start:prod
+ENTRYPOINT ["yarn", "start:prod"]

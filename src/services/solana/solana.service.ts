@@ -276,11 +276,22 @@ export class SolanaService {
     }
   }
 
+  public async getWalletTokens(
+    walletAddress: string,
+  ): Promise<{ tokens: TokenInfoResponse[]; totalValueUsd: number }> {
+    return await this.fetchWalletData(walletAddress);
+  }
+
   public async getUserTokens(
     userId: string,
   ): Promise<{ tokens: TokenInfoResponse[]; totalValueUsd: number }> {
     const user = await this.db.user.findFirstOrThrow({ where: { id: userId } });
-    const userPubKey = new PublicKey(user.wallet);
+
+    return await this.fetchWalletData(user.wallet);
+  }
+
+  private async fetchWalletData(walletAddress: string) {
+    const userPubKey = new PublicKey(walletAddress);
     const { value } = await this.connection.getParsedTokenAccountsByOwner(
       userPubKey,
       { programId: TOKEN_PROGRAM_ID },

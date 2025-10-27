@@ -268,3 +268,14 @@ export class StrategyInfoResponse {
   })
   vaults: StrategyVaultInfo[];
 }
+
+export class CreateUserDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  name: string;
+
+  @IsString()
+  @ApiProperty()
+  walletAddress: string;
+}

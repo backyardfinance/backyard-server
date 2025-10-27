@@ -25,6 +25,11 @@ export class SolanaController {
     return await this.solanaService.getUserTokens(userId);
   }
 
+  @Get('/wallet-tokens/:walletAddress')
+  async getWalletTokens(@Param('walletAddress') walletAddress: string) {
+    return await this.solanaService.getWalletTokens(walletAddress);
+  }
+
   // endpoint -> vaults total deposits, CRON -> get vault underlying TVL by cron, and aggregate backyard TVL in tkn and total = both added, also in USD
   // possibly in get all vaults endpoint, also get native APY from native vault SC, total APY = native APY + YARD reward
 

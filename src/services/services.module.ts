@@ -13,6 +13,7 @@ import { QuoteService } from './quote/quote.service';
 import { JupiterQuoteAdapter } from './quote/adapters/jupiter-quote.adapter';
 import { StrategyService } from './strategy/strategy.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UserService } from './user/user.service';
 
 @Module({
   imports: [DatabaseModule, ScheduleModule.forRoot()],
@@ -29,6 +30,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     QuoteService,
     JupiterQuoteAdapter,
     StrategyService,
+    UserService,
   ],
   exports: [
     SolanaService,
@@ -37,6 +39,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TransactionService,
     QuoteService,
     StrategyService,
+    UserService,
   ],
 })
 export class ServicesModule {}
