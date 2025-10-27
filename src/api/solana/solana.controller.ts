@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { SolanaService } from '../../services/solana/solana.service';
-import { CreateStrategyDto } from '../../dto';
+import { TokenInfoResponse } from '../../dto';
 import { DatabaseService } from '../../database';
-import { Strategy } from '@prisma/client';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('solana')
 export class SolanaController {
@@ -20,6 +20,7 @@ export class SolanaController {
   // EASY -> total_pos -> deposited + interest earned
 
   @Get('/user-tokens/:userId')
+  @ApiOkResponse({ type: TokenInfoResponse, isArray: true })
   async getUserTokens(@Param('userId') userId: string) {
     return await this.solanaService.getUserTokens(userId);
   }

@@ -12,13 +12,13 @@ export class VaultController {
   constructor(private readonly vaultService: VaultService) {}
 
   @Get('/vaults')
-  @ApiOkResponse({ type: VaultInfoResponse })
+  @ApiOkResponse({ type: VaultInfoResponse, isArray: true })
   async getAllVaults() {
     return this.vaultService.getVaults();
   }
 
   @Get('/history/:vaultId')
-  @ApiOkResponse({ type: VaultHistoryInfoResponse })
+  @ApiOkResponse({ type: VaultHistoryInfoResponse, isArray: true })
   async getVaultHistory(@Param('vaultId') vaultId: string) {
     return this.vaultService.getVaultHistory(vaultId);
   }

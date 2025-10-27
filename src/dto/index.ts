@@ -106,22 +106,48 @@ export interface UserPortfolioView {
   totalValueUsd: number;
 }
 
-export interface TokenInfoResponse {
-  address: string;
-  isNative: boolean;
-  name: string;
-  symbol: string;
-  priceUsd?: number;
-  logoURI?: string;
-  valueUsd?: number;
-  tokenAmount: TokenAmount;
+export class TokenAmount {
+  @IsNumber()
+  @ApiProperty()
+  amount: number;
+  @IsNumber()
+  @ApiProperty()
+  decimals: number;
+  @IsNumber()
+  @ApiProperty()
+  uiAmount: number;
+  @IsString()
+  @ApiProperty()
+  uiAmountString: string;
 }
 
-export interface TokenAmount {
-  amount: number;
-  decimals: number;
-  uiAmount: number;
-  uiAmountString: string;
+export class TokenInfoResponse {
+  @IsString()
+  @ApiProperty()
+  address: string;
+  @IsBoolean()
+  @ApiProperty()
+  isNative: boolean;
+  @IsString()
+  @ApiProperty()
+  name: string;
+  @IsString()
+  @ApiProperty()
+  symbol: string;
+  @IsNumber()
+  @ApiProperty()
+  priceUsd?: number;
+  @IsString()
+  @ApiProperty()
+  logoURI?: string;
+  @IsNumber()
+  @ApiProperty()
+  valueUsd?: number;
+  @ApiProperty({
+    type: TokenAmount,
+    description: 'Token amount',
+  })
+  tokenAmount: TokenAmount;
 }
 
 export class VaultInfo {
@@ -137,6 +163,20 @@ export class VaultInfo {
   @IsNumber()
   @ApiProperty()
   yardReward: number;
+  @IsString()
+  @ApiProperty()
+  publicKey: string;
+}
+export class UsertInfoResponse {
+  @IsString()
+  @ApiProperty()
+  userId: string;
+  @IsString()
+  @ApiProperty()
+  name: string;
+  @IsString()
+  @ApiProperty()
+  wallet: string;
 }
 
 export class VaultInfoResponse extends VaultInfo {
@@ -177,7 +217,8 @@ export class UserStrategyInfoResponse {
 
 export class VaultInfoStrategyResponse extends VaultInfoResponse {
   @ApiProperty({
-    type: [UserStrategyInfoResponse],
+    type: UserStrategyInfoResponse,
+    isArray: true,
     description: 'List of user strategies connected to this vault',
   })
   strategies: UserStrategyInfoResponse[];
@@ -221,7 +262,8 @@ export class StrategyInfoResponse {
   @ApiProperty()
   strategyTvl: number;
   @ApiProperty({
-    type: [StrategyVaultInfo],
+    type: StrategyVaultInfo,
+    isArray: true,
     description: 'List of vaults that is used in this strategy',
   })
   vaults: StrategyVaultInfo[];

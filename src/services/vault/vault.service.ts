@@ -23,8 +23,16 @@ export class VaultService {
         vaultId: vaultId,
       },
     });
+    const vaultKey = await this.db.vault.findUnique({
+      where: {
+        id: vaultId,
+      },
+      select: {
+        public_key: true,
+      },
+    });
     return vaultHistoryRecords.map((vh) =>
-      this.mapVaultHistoryToVaultHistoryInfoResponse(vh),
+      this.mapVaultHistoryToVaultHistoryInfoResponse(vh, vaultKey.public_key),
     );
   }
 
@@ -77,6 +85,7 @@ export class VaultService {
       strategies: strategiesInfo,
       tvl: Number(vault.platform),
       yardReward: Number(vault.current_yard_reward),
+      publicKey: vault.public_key,
     };
   }
 
@@ -89,11 +98,13 @@ export class VaultService {
       tvl: Number(vault.current_tvl),
       assetPrice: Number(vault.current_asset_price),
       yardReward: Number(vault.current_yard_reward),
+      publicKey: vault.public_key,
     };
   }
 
   private mapVaultHistoryToVaultHistoryInfoResponse(
     vaultHisory: VaultHistory,
+    publicKey: string,
   ): VaultHistoryInfoResponse {
     return {
       recordedAt: vaultHisory.recorded_at,
@@ -101,6 +112,7 @@ export class VaultService {
       tvl: Number(vaultHisory.tvl),
       assetPrice: Number(vaultHisory.asset_price),
       yardReward: Number(vaultHisory.yard_reward),
+      publicKey: publicKey,
     };
   }
 

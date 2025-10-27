@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { StrategyService } from '../../services/strategy/strategy.service';
 import { CreateStrategyDto, StrategyInfoResponse } from '../../dto';
 import { ApiOkResponse } from '@nestjs/swagger';
@@ -16,7 +8,7 @@ export class StrategyController {
   constructor(private readonly strategyService: StrategyService) {}
 
   @Get('/user/:userId')
-  @ApiOkResponse({ type: StrategyInfoResponse })
+  @ApiOkResponse({ type: StrategyInfoResponse, isArray: true })
   async getStrategies(
     @Param('userId') userId: string,
   ): Promise<StrategyInfoResponse[]> {

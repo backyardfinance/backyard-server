@@ -1,10 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { CreateVaultDto } from 'src/dto';
+import { CreateVaultDto, UsertInfoResponse } from 'src/dto';
 import { MetaplexService } from 'src/services/metaplex/metaplex.service';
 import { CreateMetadataParams } from 'src/services/metaplex/types';
 import { SolanaService } from 'src/services/solana/solana.service';
+import { DatabaseService } from '../../database';
 
 @Controller('admin')
 @ApiTags('admin')
@@ -12,7 +13,19 @@ export class AdminController {
   constructor(
     private readonly solanaService: SolanaService,
     private readonly metaplexService: MetaplexService,
+    private readonly db: DatabaseService,
   ) {}
+
+  @Get('/users')
+  @ApiOkResponse({ type: UsertInfoResponse, isArray: true })
+  async getUserTokens() {
+    const users = await this.db.user.findMany();
+    return users.map((user) => ({
+      userId: user.id,
+      name: user.name,
+      wallet: user.wallet,
+    }));
+  }
 
   @Post('create-vault')
   async createVault(@Body() dto: CreateVaultDto) {
