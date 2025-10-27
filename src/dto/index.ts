@@ -279,3 +279,15 @@ export class CreateUserDto {
   @ApiProperty()
   walletAddress: string;
 }
+
+export class VerifySiwsDto {
+  @ApiProperty()
+  @IsString()
+  message!: string;
+  @ApiProperty()
+  @IsString()
+  signature!: string;
+  @ApiProperty()
+  @IsString()
+  address!: string;
+}
