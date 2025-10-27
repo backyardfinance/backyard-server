@@ -11,9 +11,7 @@ export class CronJobsService {
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  public async update1() {
-    // await this.categoriesService.parseCategoriesToDataBase();
-  }
+  public async update1() {}
 
   @Cron(CronExpression.EVERY_HOUR)
   public async updateEveryHour() {

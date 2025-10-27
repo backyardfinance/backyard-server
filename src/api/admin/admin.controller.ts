@@ -5,7 +5,6 @@ import { CreateVaultDto, UsertInfoResponse, CreateUserDto } from 'src/dto';
 import { MetaplexService } from 'src/services/metaplex/metaplex.service';
 import { CreateMetadataParams } from 'src/services/metaplex/types';
 import { SolanaService } from 'src/services/solana/solana.service';
-import { DatabaseService } from '../../database';
 import { UserService } from '../../services/user/user.service';
 
 @Controller('admin')
@@ -14,19 +13,13 @@ export class AdminController {
   constructor(
     private readonly solanaService: SolanaService,
     private readonly metaplexService: MetaplexService,
-    private readonly db: DatabaseService,
     private readonly userService: UserService,
   ) {}
 
   @Get('/users')
   @ApiOkResponse({ type: UsertInfoResponse, isArray: true })
-  async getUserTokens() {
-    const users = await this.db.user.findMany();
-    return users.map((user) => ({
-      userId: user.id,
-      name: user.name,
-      wallet: user.wallet,
-    }));
+  async getUsers() {
+    return await this.userService.getUsers();
   }
 
   @Post('create-user')
