@@ -191,10 +191,23 @@ export class VaultInfoResponse extends VaultInfo {
   platform: string;
 }
 
+export class VaultHistoryUserSlice {
+  @IsNumber()
+  @ApiProperty()
+  positionUsd: number;
+
+  @IsNumber()
+  @ApiProperty()
+  apy: number;
+}
+
 export class VaultHistoryInfoResponse extends VaultInfo {
   @IsDate()
   @ApiProperty()
   recordedAt: Date;
+
+  @ApiProperty({ type: VaultHistoryUserSlice })
+  user: VaultHistoryUserSlice;
 }
 
 export class UserStrategyInfoResponse {
@@ -222,6 +235,14 @@ export class VaultInfoStrategyResponse extends VaultInfoResponse {
     description: 'List of user strategies connected to this vault',
   })
   strategies: UserStrategyInfoResponse[];
+
+  @ApiProperty()
+  @IsNumber()
+  myPositionUsd: number;
+
+  @ApiProperty()
+  @IsNumber()
+  myOwnershipFraction: number;
 }
 
 export class StrategyVaultInfo {

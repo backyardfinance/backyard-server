@@ -17,10 +17,13 @@ export class VaultController {
     return this.vaultService.getVaults();
   }
 
-  @Get('/history/:vaultId')
+  @Get('/history/:userId/:vaultId')
   @ApiOkResponse({ type: VaultHistoryInfoResponse, isArray: true })
-  async getVaultHistory(@Param('vaultId') vaultId: string) {
-    return this.vaultService.getVaultHistory(vaultId);
+  async getVaultHistory(
+    @Param('userId') userId: string,
+    @Param('vaultId') vaultId: string,
+  ) {
+    return this.vaultService.getVaultHistory(vaultId, userId);
   }
 
   @Get('/:userId/:vaultId')

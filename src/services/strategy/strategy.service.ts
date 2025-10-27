@@ -20,9 +20,12 @@ export class StrategyService {
   }
 
   async getStrategyInfo(strategyId: string): Promise<StrategyInfoResponse> {
-    const strategy: Strategy = (
-      await this.getStrategies(undefined, strategyId)
-    )[0];
+    const strategy = await this.db.strategy.findUnique({
+      where: { id: strategyId },
+    });
+    if (!strategy) {
+      throw new Error('Strategy not found');
+    }
     const strategyVaults = await this.getStrategiesVaults(strategy.id);
     return this.mapStrategyDashboardInfoResponse(strategy, strategyVaults);
   }
