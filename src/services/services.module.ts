@@ -12,9 +12,10 @@ import { BuilderFactory } from './transaction/builders/builder.factory';
 import { QuoteService } from './quote/quote.service';
 import { JupiterQuoteAdapter } from './quote/adapters/jupiter-quote.adapter';
 import { StrategyService } from './strategy/strategy.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, ScheduleModule.forRoot()],
   providers: [
     SolanaService,
     MetaplexService,

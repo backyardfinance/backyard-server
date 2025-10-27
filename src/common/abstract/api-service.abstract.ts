@@ -34,6 +34,7 @@ export abstract class ApiService {
           data: vaultData,
         });
 
+        const yard = this.calculateYardReward(vaultData.current_tvl);
         const recordedAt = new Date();
         await tx.vaultHistory.upsert({
           where: {
@@ -46,7 +47,7 @@ export abstract class ApiService {
             tvl: vaultData.current_tvl,
             apy: vaultData.current_apy,
             asset_price: vaultData.current_asset_price,
-            yard_reward: vaultData.current_yard_reward,
+            yard_reward: yard,
           },
           create: {
             vaultId: id,
@@ -54,7 +55,7 @@ export abstract class ApiService {
             tvl: vaultData.current_tvl,
             apy: vaultData.current_apy,
             asset_price: vaultData.current_asset_price,
-            yard_reward: vaultData.current_yard_reward,
+            yard_reward: yard,
           },
         });
 
@@ -90,4 +91,14 @@ export abstract class ApiService {
   protected abstract transformApiResponse(
     data: any[],
   ): Prisma.VaultUpdateInput[];
+
+  private calculateYardReward(tvl: Decimal): Decimal {
+    const minPercent = 8;
+    const maxPercent = 25;
+
+    const randomPercent =
+      Math.random() * (maxPercent - minPercent) + minPercent;
+
+    return tvl.mul(new Decimal(randomPercent).div(100));
+  }
 }
