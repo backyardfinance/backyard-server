@@ -13,7 +13,7 @@ export class CronJobsService {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   public async update1() {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_HOUR)
   public async updateEveryHour() {
     console.log('Start Cron job.');
     await this.kaminoService.upsertVaultsFromApi();
