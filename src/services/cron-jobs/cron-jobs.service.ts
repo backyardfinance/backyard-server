@@ -15,7 +15,9 @@ export class CronJobsService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   public async updateEveryHour() {
+    console.log('Start Cron job.');
     await this.kaminoService.upsertVaultsFromApi();
     await this.jupiterApiService.upsertVaultsFromApi();
+    console.log('Finish Cron job.');
   }
 }
