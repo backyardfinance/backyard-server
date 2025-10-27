@@ -37,11 +37,9 @@ export class JupiterApiService extends ApiService {
         toNum(vft.supplyRate) + toNum(vft.rewardsRate);
       const apyFraction = totalRateBps / BPS;
 
-      const assetPriceUsdTotal = totalAssets * price;
-
       const apyDec = new Decimal(apyFraction.toFixed(18));
       const tvlDec = new Decimal(tvlUsd.toFixed(18));
-      const assetPriceDec = new Decimal(assetPriceUsdTotal.toFixed(18));
+      const assetPriceDec = new Decimal(price.toFixed(18));
       // TODO: calculate here
       const yardRewardDec = new Decimal(0);
       return {
