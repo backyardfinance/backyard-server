@@ -90,6 +90,7 @@ jobs:
 
     - name: Write task definition from secret
       run: |
+        mkdir -p .aws
         echo '${{ secrets.TASK_DEFINITION_JSON }}' > .aws/task-definition.json
 
     - name: Fill in the new image ID in the Amazon ECS task definition
@@ -107,3 +108,6 @@ jobs:
         service: ${{ env.ECS_SERVICE }}
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
+    - name: Clean up temporary files
+      if: always()
+      run: rm -rf .aws
