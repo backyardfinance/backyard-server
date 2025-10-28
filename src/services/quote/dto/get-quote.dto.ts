@@ -32,7 +32,7 @@ export class GetQuoteDto {
   @IsNotEmpty()
   walletAddress: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: true, type: [VaultDepositDto] })
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })

@@ -49,34 +49,35 @@ export class JupiterBuilder implements ProtocolBuilder {
     data: QuoteVaultDataDto,
     signer: PublicKey,
   ): Promise<TransactionInstruction> {
-    const { vaultPubkey, amount, accounts } = data;
-    const jupiterAccounts = accounts as JupiterAccountsDto;
+    //   const { vaultPubkey, amount, accounts } = data;
+    //   const jupiterAccounts = accounts as JupiterAccountsDto;
 
-    console.log('Jupiter accounts:', jupiterAccounts);
+    //   console.log('Jupiter accounts:', jupiterAccounts);
 
-    return this.program.methods
-      .deposit(new PublicKey(vaultPubkey), new BN(amount))
-      .accounts({
-        signer: signer,
-        inputToken: new PublicKey(jupiterAccounts.inputToken),
-        tokenProgram: TOKEN_PROGRAM_ID,
-        tokenProgram2022: TOKEN_2022_PROGRAM_ID,
-        lpToken: new PublicKey(jupiterAccounts.lpToken),
-        fTokenMint: new PublicKey(jupiterAccounts.fTokenMint),
-        jupiterVault: new PublicKey(jupiterAccounts.jupiterVault),
-        lending: new PublicKey(jupiterAccounts.lending),
-        lendingAdmin: new PublicKey(jupiterAccounts.lendingAdmin),
-        rewardsRateModel: new PublicKey(jupiterAccounts.rewardsRateModel),
-        lendingSupplyPositionOnLiquidity: new PublicKey(
-          jupiterAccounts.lendingSupplyPositionOnLiquidity,
-        ),
-        liquidity: new PublicKey(jupiterAccounts.liquidity),
-        liquidityProgram: new PublicKey(jupiterAccounts.liquidityProgram),
-        rateModel: new PublicKey(jupiterAccounts.rateModel),
-        supplyTokenReservesLiquidity: new PublicKey(
-          jupiterAccounts.supplyTokenReservesLiquidity,
-        ),
-      })
-      .instruction();
+    //   return this.program.methods
+    //     .deposit(new PublicKey(vaultPubkey), new BN(amount))
+    //     .accounts({
+    //       signer: signer,
+    //       inputToken: new PublicKey(jupiterAccounts.inputToken),
+    //       tokenProgram: TOKEN_PROGRAM_ID,
+    //       tokenProgram2022: TOKEN_2022_PROGRAM_ID,
+    //       lpToken: new PublicKey(jupiterAccounts.lpToken),
+    //       fTokenMint: new PublicKey(jupiterAccounts.fTokenMint),
+    //       jupiterVault: new PublicKey(jupiterAccounts.jupiterVault),
+    //       lending: new PublicKey(jupiterAccounts.lending),
+    //       lendingAdmin: new PublicKey(jupiterAccounts.lendingAdmin),
+    //       rewardsRateModel: new PublicKey(jupiterAccounts.rewardsRateModel),
+    //       lendingSupplyPositionOnLiquidity: new PublicKey(
+    //         jupiterAccounts.lendingSupplyPositionOnLiquidity,
+    //       ),
+    //       liquidity: new PublicKey(jupiterAccounts.liquidity),
+    //       liquidityProgram: new PublicKey(jupiterAccounts.liquidityProgram),
+    //       rateModel: new PublicKey(jupiterAccounts.rateModel),
+    //       supplyTokenReservesLiquidity: new PublicKey(
+    //         jupiterAccounts.supplyTokenReservesLiquidity,
+    //       ),
+    //     })
+    //     .instruction();
+    return;
   }
 }

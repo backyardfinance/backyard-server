@@ -25,8 +25,9 @@ import { DatabaseService } from '../../database';
 import { Strategy } from '@prisma/client';
 import axios from 'axios';
 import { TokenInfoResponse, VaultPlatform } from '../../dto';
-import { BackyardPrograms } from 'src/idls/backyard_programs';
 import { Program } from '@coral-xyz/anchor';
+import { BackyardPrograms } from 'src/idls/backyard_programs';
+import { VaultService } from '../vault/vault.service';
 
 const PROGRAM_ID = new PublicKey(
   process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
@@ -44,7 +45,7 @@ export class SolanaService {
   ) {
     // const rpc =
     //   this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
-    const rpc = 'https://solana-mainnet.gateway.tatum.io';
+    const rpc = 'https://api.devnet.solana.com';
     this.connection = new Connection(rpc, 'confirmed');
 
     const dummy = Keypair.generate();
@@ -79,7 +80,7 @@ export class SolanaService {
   async createVault(
     protocolName: VaultPlatform,
     ourLp: string,
-    protocolLp: string,
+    // protocolLp: string,
     inputToken: string,
   ) {
     // vault id = public key; in db it's a public_key field
@@ -119,7 +120,8 @@ export class SolanaService {
         current_apy: 0,
         platform: protocolName,
         our_lp_mint: ourLp,
-        protocol_lp_mint: protocolLp,
+        // protocol_lp_mint: protocolLp,
+        protocol_lp_mint: '',
         input_token_mint: inputToken,
       },
     });
@@ -141,7 +143,7 @@ export class SolanaService {
   async createLPAndAtas(
     authority: PublicKey,
     platformVaultInputToken: PublicKey,
-    platformLp: PublicKey,
+    // platformLp: PublicKey,
     mintKeypair: Keypair = Keypair.generate(),
   ) {
     const extensions = [ExtensionType.NonTransferable];
@@ -174,22 +176,22 @@ export class SolanaService {
     const ata1 = getAssociatedTokenAddressSync(
       mintKeypair.publicKey,
       authority,
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID,
     );
 
-    const ata2 = getAssociatedTokenAddressSync(
-      platformLp,
-      authority,
-      false,
-      TOKEN_2022_PROGRAM_ID,
-    );
+    // const ata2 = getAssociatedTokenAddressSync(
+    //   platformLp,
+    //   authority,
+    //   false,
+    //   TOKEN_2022_PROGRAM_ID,
+    // );
 
     const ata3 = getAssociatedTokenAddressSync(
       platformVaultInputToken,
       authority,
-      false,
-      TOKEN_2022_PROGRAM_ID,
+      true,
+      TOKEN_PROGRAM_ID,
     );
 
     const createAta1Ix = createAssociatedTokenAccountInstruction(
@@ -200,20 +202,20 @@ export class SolanaService {
       TOKEN_2022_PROGRAM_ID,
     );
 
-    const createAta2Ix = createAssociatedTokenAccountInstruction(
-      this.master.publicKey,
-      ata2,
-      authority,
-      platformLp,
-      TOKEN_2022_PROGRAM_ID,
-    );
+    // const createAta2Ix = createAssociatedTokenAccountInstruction(
+    //   this.master.publicKey,
+    //   ata2,
+    //   authority,
+    //   platformLp,
+    //   TOKEN_2022_PROGRAM_ID,
+    // );
 
     const createAta3Ix = createAssociatedTokenAccountInstruction(
       this.master.publicKey,
       ata3,
       authority,
       platformVaultInputToken,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
     );
 
     const setupTx = new Transaction().add(
@@ -221,7 +223,7 @@ export class SolanaService {
       initializeNonTransferableIx,
       initializeMintIx,
       createAta1Ix,
-      createAta2Ix,
+      // createAta2Ix,
       createAta3Ix,
     );
 
@@ -237,7 +239,7 @@ export class SolanaService {
       authority: authority.toBase58(),
       atas: {
         backyardLp: ata1.toBase58(),
-        platformLp: ata2.toBase58(),
+        // platformLp: ata2.toBase58(),
         inputToken: ata3.toBase58(),
       },
     };

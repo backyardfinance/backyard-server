@@ -21,30 +21,30 @@ export class AdminController {
     const vaultResult = await this.solanaService.createVault(
       platform,
       ourLpMint.publicKey.toString(),
-      platfromLp,
+      // platfromLp,
       platformVaultInputToken,
     );
 
     const lpResult = await this.solanaService.createLPAndAtas(
       vaultResult.vaultPdaAddress,
       new PublicKey(dto.platformVaultInputToken),
-      new PublicKey(dto.platfromLp),
+      // new PublicKey(dto.platfromLp),
       ourLpMint,
     );
 
-    const { lpName, lpSymbol, uri } = dto;
-    const params: CreateMetadataParams = {
-      mint: lpResult.mint,
-      lpName,
-      lpSymbol,
-      uri,
-    };
-    const metaResult = await this.metaplexService.uploadToken2022Meta(params);
+    // const { lpName, lpSymbol, uri } = dto;
+    // const params: CreateMetadataParams = {
+    //   mint: lpResult.mint,
+    //   lpName,
+    //   lpSymbol,
+    //   uri,
+    // };
+    // const metaResult = await this.metaplexService.uploadToken2022Meta(params);
 
     return {
       vaultResult,
       lpResult,
-      metaResult,
+      //   metaResult,
     };
   }
 }
