@@ -205,6 +205,12 @@ export class VaultHistoryInfoResponse extends VaultInfo {
   @IsDate()
   @ApiProperty()
   recordedAt: Date;
+}
+
+export class UserVaultHistoryInfoResponse extends VaultInfo {
+  @IsDate()
+  @ApiProperty()
+  recordedAt: Date;
 
   @ApiProperty({ type: VaultHistoryUserSlice })
   user: VaultHistoryUserSlice;

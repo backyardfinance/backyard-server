@@ -2,6 +2,7 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { VaultService } from '../../services/vault/vault.service';
 import { ApiOkResponse } from '@nestjs/swagger';
 import {
+  UserVaultHistoryInfoResponse,
   VaultHistoryInfoResponse,
   VaultInfoResponse,
   VaultInfoStrategyResponse,
@@ -17,8 +18,14 @@ export class VaultController {
     return this.vaultService.getVaults();
   }
 
-  @Get('/history/:userId/:vaultId')
+  @Get('/history/:vaultId')
   @ApiOkResponse({ type: VaultHistoryInfoResponse, isArray: true })
+  async getVaultHistoryByVaultId(@Param('vaultId') vaultId: string) {
+    return this.vaultService.getVaultHistoryByVaultId(vaultId);
+  }
+
+  @Get('/history/:userId/:vaultId')
+  @ApiOkResponse({ type: UserVaultHistoryInfoResponse, isArray: true })
   async getVaultHistory(
     @Param('userId') userId: string,
     @Param('vaultId') vaultId: string,

@@ -3,6 +3,7 @@ import { DatabaseService } from '../../database';
 import { Vault, VaultHistory } from '@prisma/client';
 import {
   UserStrategyInfoResponse,
+  UserVaultHistoryInfoResponse,
   VaultHistoryInfoResponse,
   VaultInfoResponse,
   VaultInfoStrategyResponse,
@@ -17,10 +18,31 @@ export class VaultService {
     return vaults.map((v) => this.mapVaultToVaultInfoResponse(v));
   }
 
+  async getVaultHistoryByVaultId(
+    vaultId: string,
+  ): Promise<VaultHistoryInfoResponse[]> {
+    const vaultHistoryRecords = await this.db.vaultHistory.findMany({
+      where: {
+        vaultId: vaultId,
+      },
+    });
+    const vaultKey = await this.db.vault.findUnique({
+      where: {
+        id: vaultId,
+      },
+      select: {
+        public_key: true,
+      },
+    });
+    return vaultHistoryRecords.map((vh) =>
+      this.mapVaultHistoryToVaultHistoryInfoResponse(vh, vaultKey.public_key),
+    );
+  }
+
   async getVaultHistory(
     vaultId: string,
     userId: string,
-  ): Promise<VaultHistoryInfoResponse[]> {
+  ): Promise<UserVaultHistoryInfoResponse[]> {
     const vaultHistoryRecords = await this.db.vaultHistory.findMany({
       where: {
         vaultId: vaultId,
@@ -53,7 +75,7 @@ export class VaultService {
 
     if (userVaultStrategies.length === 0) {
       return vaultHistoryRecords.map((vh) => ({
-        ...this.mapVaultHistoryToVaultHistoryInfoResponse(
+        ...this.mapUserVaultHistoryToVaultHistoryInfoResponse(
           vh,
           vaultKey?.public_key ?? '',
           0,
@@ -76,7 +98,7 @@ export class VaultService {
 
         const userApyAtThatTime = Number(vh.apy);
 
-        const base = this.mapVaultHistoryToVaultHistoryInfoResponse(
+        const base = this.mapUserVaultHistoryToVaultHistoryInfoResponse(
           vh,
           vaultKey?.public_key ?? '',
           myPositionUsdAtThatTime,
@@ -170,9 +192,23 @@ export class VaultService {
   private mapVaultHistoryToVaultHistoryInfoResponse(
     vaultHisory: VaultHistory,
     publicKey: string,
+  ): VaultHistoryInfoResponse {
+    return {
+      recordedAt: vaultHisory.recorded_at,
+      apy: Number(vaultHisory.apy),
+      tvl: Number(vaultHisory.tvl),
+      assetPrice: Number(vaultHisory.asset_price),
+      yardReward: Number(vaultHisory.yard_reward),
+      publicKey: publicKey,
+    };
+  }
+
+  private mapUserVaultHistoryToVaultHistoryInfoResponse(
+    vaultHisory: VaultHistory,
+    publicKey: string,
     myPositionUsdAtThatTime: number,
     userApyAtThatTime: number,
-  ): VaultHistoryInfoResponse {
+  ): UserVaultHistoryInfoResponse {
     return {
       recordedAt: vaultHisory.recorded_at,
       apy: Number(vaultHisory.apy),
