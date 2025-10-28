@@ -1,6 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { StrategyService } from '../../services/strategy/strategy.service';
-import { CreateStrategyDto, StrategyInfoResponse } from '../../dto';
+import {
+  CreateStrategyDto,
+  PortfolioHistoryPoint,
+  StrategyHistoryPoint,
+  StrategyInfoResponse,
+} from '../../dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('strategies')
@@ -13,6 +18,22 @@ export class StrategyController {
     @Param('userId') userId: string,
   ): Promise<StrategyInfoResponse[]> {
     return this.strategyService.getStrategiesInfo(userId);
+  }
+
+  @Get('/:strategyId/history')
+  @ApiOkResponse({ type: StrategyHistoryPoint, isArray: true })
+  async getStrategyHistory(
+    @Param('strategyId') strategyId: string,
+  ): Promise<StrategyHistoryPoint[]> {
+    return this.strategyService.getStrategyHistory(strategyId);
+  }
+
+  @Get('portfolio/history/:userId')
+  @ApiOkResponse({ type: StrategyHistoryPoint, isArray: true })
+  async getPortfolioHistory(
+    @Param('userId') userId: string,
+  ): Promise<PortfolioHistoryPoint[]> {
+    return this.strategyService.getUserPortfolioHistory(userId);
   }
 
   @Get('/:strategyId')

@@ -275,19 +275,44 @@ export class StrategyInfoResponse {
   strategyId: string;
   @IsNumber()
   @ApiProperty()
-  strategyApy: number;
-  @IsNumber()
-  @ApiProperty()
   strategyDepositedAmount: number;
   @IsNumber()
   @ApiProperty()
-  strategyTvl: number;
+  strategyApy: number;
   @ApiProperty({
     type: StrategyVaultInfo,
     isArray: true,
     description: 'List of vaults that is used in this strategy',
   })
   vaults: StrategyVaultInfo[];
+}
+
+export class StrategyHistoryPoint {
+  @IsDate()
+  @ApiProperty()
+  recordedAt: Date;
+
+  @IsNumber()
+  @ApiProperty()
+  positionUsd: number;
+
+  @IsNumber()
+  @ApiProperty()
+  apy: number;
+}
+
+export class PortfolioHistoryPoint {
+  @IsDate()
+  @ApiProperty()
+  recordedAt: Date;
+
+  @IsNumber()
+  @ApiProperty()
+  totalPositionUsd: number;
+
+  @IsNumber()
+  @ApiProperty()
+  avgApy: number;
 }
 
 export class CreateUserDto {
