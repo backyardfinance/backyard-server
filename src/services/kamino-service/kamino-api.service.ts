@@ -42,7 +42,7 @@ export class KaminoApiService extends ApiService {
 
       return {
         id: vault.vault_id,
-        current_apy: calculatedApy,
+        current_apy: new Decimal(calculatedApy).mul(100).toDecimalPlaces(2),
         current_tvl: new Decimal(vault.tokensInvestedUsd),
         current_asset_price: new Decimal(vault.tokenPrice),
         current_yard_reward: incentives, // or whatever represents yard reward
