@@ -70,6 +70,8 @@ export class VaultService {
       select: {
         createdAt: true,
         ownership_fraction: true,
+        deposited_amount_usd: true,
+        interest_earned_usd: true,
       },
     });
 
@@ -88,28 +90,60 @@ export class VaultService {
       .map((s) => s.createdAt.getTime())
       .sort((a, b) => a - b)[0];
 
-    const { totalOwnershipFraction } =
-      await this.getUserOwnershipFractionInVault(vaultId, userId);
+    const basePrincipalUsd = userVaultStrategies.reduce(
+      (acc, s) => acc + Number(s.deposited_amount_usd),
+      0,
+    );
 
-    return vaultHistoryRecords
-      .filter((vh) => vh.recorded_at.getTime() >= firstUserJoinDate)
-      .map((vh) => {
-        const myPositionUsdAtThatTime = Number(vh.tvl) * totalOwnershipFraction;
+    let cumulativeInterestUsd = userVaultStrategies.reduce(
+      (acc, s) => acc + Number(s.interest_earned_usd),
+      0,
+    );
 
-        const userApyAtThatTime = Number(vh.apy);
+    const filteredHistory = vaultHistoryRecords.filter(
+      (vh) => vh.recorded_at.getTime() >= firstUserJoinDate,
+    );
 
-        const base = this.mapUserVaultHistoryToVaultHistoryInfoResponse(
-          vh,
+    if (filteredHistory.length === 0) {
+      return [];
+    }
+
+    const response: UserVaultHistoryInfoResponse[] = [];
+
+    let prev = filteredHistory[0];
+    response.push(
+      this.mapUserVaultHistoryToVaultHistoryInfoResponse(
+        prev,
+        vaultKey?.public_key ?? '',
+        basePrincipalUsd + cumulativeInterestUsd,
+        Number(prev.apy),
+      ),
+    );
+
+    for (let i = 1; i < filteredHistory.length; i++) {
+      const curr = filteredHistory[i];
+
+      const dtMs = curr.recorded_at.getTime() - prev.recorded_at.getTime();
+      const dtHours = dtMs / (1000 * 60 * 60);
+
+      const earnedIntervalUsd =
+        basePrincipalUsd * Number(prev.apy) * (dtHours / (24 * 365));
+
+      cumulativeInterestUsd += earnedIntervalUsd;
+
+      response.push(
+        this.mapUserVaultHistoryToVaultHistoryInfoResponse(
+          curr,
           vaultKey?.public_key ?? '',
-          myPositionUsdAtThatTime,
-          userApyAtThatTime,
-        );
+          basePrincipalUsd + cumulativeInterestUsd,
+          Number(curr.apy),
+        ),
+      );
 
-        return {
-          ...base,
-          myPositionUsd: myPositionUsdAtThatTime,
-        };
-      });
+      prev = curr;
+    }
+
+    return response;
   }
 
   async getVaultUserInfo(
@@ -157,7 +191,11 @@ export class VaultService {
       },
     );
 
-    const myPositionUsd = Number(vault.current_tvl) * totalOwnershipFraction;
+    const myPositionUsd = vaultStrategies.reduce(
+      (acc, vs) =>
+        acc + Number(vs.deposited_amount_usd) + Number(vs.interest_earned_usd),
+      0,
+    );
 
     return {
       apy: Number(vault.current_apy),
@@ -166,7 +204,7 @@ export class VaultService {
       name: vault.name,
       platform: vault.platform,
       strategies: strategiesInfo,
-      tvl: Number(vault.platform),
+      tvl: Number(vault.current_tvl),
 
       myPositionUsd,
       myOwnershipFraction: totalOwnershipFraction,
