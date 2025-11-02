@@ -15,17 +15,18 @@ import {
   Provider,
   Wallet,
 } from '@coral-xyz/anchor';
-import idl from '../../../idls/backyard_programs.json';
-import { JupiterAccountsDto } from '../dto/jupiter-accounts.dto';
+import idl from '../../../idls/backyard_programs_dev.json';
+import { BackyardPrograms } from 'src/idls/backyard_programs_dev';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { BackyardPrograms } from 'src/idls/backyard_programs';
+import { DatabaseService } from 'src/database';
+import { QuoteType } from 'src/services/quote/dto/quote-type.enum';
 
 @Injectable()
 export class JupiterBuilder implements ProtocolBuilder {
   private readonly program: Program<BackyardPrograms>;
   private readonly connection: Connection;
 
-  constructor() {
+  constructor(private readonly db: DatabaseService) {
     const dummy = Keypair.generate();
     const wallet: Wallet = {
       publicKey: dummy.publicKey,
@@ -48,34 +49,66 @@ export class JupiterBuilder implements ProtocolBuilder {
   async buildInstruction(
     data: QuoteVaultDataDto,
     signer: PublicKey,
+    type: QuoteType,
   ): Promise<TransactionInstruction> {
-    const { vaultPubkey, amount, accounts } = data;
-    const jupiterAccounts = accounts as JupiterAccountsDto;
+    if (type === QuoteType.DEPOSIT) {
+      return this.buildDepositInstruction(data, signer);
+    } else {
+      return this.buildWithdrawInstruction(data, signer);
+    }
+  }
 
-    console.log('Jupiter accounts:', jupiterAccounts);
+  private async buildDepositInstruction(
+    data: QuoteVaultDataDto,
+    signer: PublicKey,
+  ) {
+    const { vaultId, amount } = data;
+
+    const vault = await this.db.vault.findUnique({
+      where: {
+        id: vaultId,
+      },
+    });
+
+    const vaultPubkey = new PublicKey(vault.public_key);
+    const inputToken = new PublicKey(vault.input_token_mint);
+    const lpToken = new PublicKey(vault.our_lp_mint);
 
     return this.program.methods
-      .deposit(new PublicKey(vaultPubkey), new BN(amount))
+      .deposit(vaultPubkey, new BN(amount))
       .accounts({
-        signer: signer,
-        inputToken: new PublicKey(jupiterAccounts.inputToken),
+        signer,
+        inputToken,
         tokenProgram: TOKEN_PROGRAM_ID,
         tokenProgram2022: TOKEN_2022_PROGRAM_ID,
-        lpToken: new PublicKey(jupiterAccounts.lpToken),
-        fTokenMint: new PublicKey(jupiterAccounts.fTokenMint),
-        jupiterVault: new PublicKey(jupiterAccounts.jupiterVault),
-        lending: new PublicKey(jupiterAccounts.lending),
-        lendingAdmin: new PublicKey(jupiterAccounts.lendingAdmin),
-        rewardsRateModel: new PublicKey(jupiterAccounts.rewardsRateModel),
-        lendingSupplyPositionOnLiquidity: new PublicKey(
-          jupiterAccounts.lendingSupplyPositionOnLiquidity,
-        ),
-        liquidity: new PublicKey(jupiterAccounts.liquidity),
-        liquidityProgram: new PublicKey(jupiterAccounts.liquidityProgram),
-        rateModel: new PublicKey(jupiterAccounts.rateModel),
-        supplyTokenReservesLiquidity: new PublicKey(
-          jupiterAccounts.supplyTokenReservesLiquidity,
-        ),
+        lpToken,
+      })
+      .instruction();
+  }
+
+  private async buildWithdrawInstruction(
+    data: QuoteVaultDataDto,
+    signer: PublicKey,
+  ) {
+    const { vaultId, amount } = data;
+
+    const vault = await this.db.vault.findUnique({
+      where: {
+        id: vaultId,
+      },
+    });
+    const vaultPubkey = new PublicKey(vault.public_key);
+    const outputToken = new PublicKey(vault.input_token_mint);
+    const lpToken = new PublicKey(vault.our_lp_mint);
+
+    return this.program.methods
+      .withdraw(vaultPubkey, new BN(amount))
+      .accounts({
+        signer,
+        outputToken,
+        lpToken,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram2022: TOKEN_2022_PROGRAM_ID,
       })
       .instruction();
   }

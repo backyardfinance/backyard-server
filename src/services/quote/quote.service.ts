@@ -4,7 +4,7 @@ import { GetQuoteDto } from './dto/get-quote.dto';
 import { DatabaseService } from 'src/database';
 import { PublicKey } from '@solana/web3.js';
 import { Vault, VaultPlatform } from '@prisma/client';
-import { VaultData } from './quote-adapter.interface';
+import { QuoteResponseDto } from './dto/quote-response.dto';
 
 @Injectable()
 export class QuoteService {
@@ -42,10 +42,13 @@ export class QuoteService {
       }),
     );
 
-    return {
+    const result: QuoteResponseDto = {
       signer: walletAddress,
+      type: dto.type,
       vaults: quotes,
     };
+
+    return result;
   }
 
   private async fetchVaultQuote(
