@@ -7,11 +7,12 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { QuoteType } from './quote-type.enum';
 
 export class VaultDepositDto {
   @ApiProperty({
     required: true,
-    example: '6a7142ed-fbcb-43e9-9292-8c6df4631f6c',
+    example: '4beb141c-0af8-42f4-b3df-99ddc55a5960',
   })
   @IsString()
   @IsNotEmpty()
@@ -32,7 +33,11 @@ export class GetQuoteDto {
   @IsNotEmpty()
   walletAddress: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: true, enum: QuoteType })
+  @IsNotEmpty()
+  type: QuoteType;
+
+  @ApiProperty({ required: true, type: [VaultDepositDto] })
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })

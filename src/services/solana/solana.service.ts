@@ -17,20 +17,14 @@ import {
   getMintLen,
   createInitializeNonTransferableMintInstruction,
   createInitializeMint2Instruction,
-  getOrCreateAssociatedTokenAccount,
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountInstruction,
 } from '@solana/spl-token';
 import { DatabaseService } from '../../database';
-import { Strategy } from '@prisma/client';
 import axios from 'axios';
 import { TokenInfoResponse, VaultPlatform } from '../../dto';
 import { BackyardPrograms } from 'src/idls/backyard_programs';
 import { Program } from '@coral-xyz/anchor';
-
-const PROGRAM_ID = new PublicKey(
-  process.env.PROGRAM_ID || '9J4gV4TL8EifN1PJGtysh1wp4wgzYoprZ4mYo8kS2PSv',
-);
 
 @Injectable()
 export class SolanaService {
@@ -246,7 +240,7 @@ export class SolanaService {
   private getVaultPda(vaultId: PublicKey) {
     const [pda] = PublicKey.findProgramAddressSync(
       [Buffer.from('vault'), vaultId.toBuffer()],
-      PROGRAM_ID,
+      this.program.programId,
     );
     return pda;
   }

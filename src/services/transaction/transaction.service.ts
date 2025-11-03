@@ -9,6 +9,7 @@ import {
 import { VaultPlatform } from '@prisma/client';
 import { CreateDepositTransactionsDto } from './dto/create-deposit-transactions.dto';
 import { QuoteVaultDataDto } from './dto/quote-vault-data.dto';
+import { QuoteType } from '../quote/dto/quote-type.enum';
 
 @Injectable()
 export class TransactionService {
@@ -21,7 +22,7 @@ export class TransactionService {
   }
 
   async createDepositTransactions(dto: CreateDepositTransactionsDto) {
-    const { signer, vaults } = dto;
+    const { signer, vaults, type } = dto;
 
     const { blockhash, lastValidBlockHeight } =
       await this.connection.getLatestBlockhash('finalized');
@@ -31,6 +32,7 @@ export class TransactionService {
         this.buildTransaction(
           vault,
           new PublicKey(signer),
+          type,
           blockhash,
           lastValidBlockHeight,
         ),
@@ -43,12 +45,13 @@ export class TransactionService {
   private async buildTransaction(
     vaultData: QuoteVaultDataDto,
     signer: PublicKey,
+    type: QuoteType,
     blockhash: string,
     lastValidBlockHeight: number,
   ) {
     const builder = this.builderFactory.getBuilder(VaultPlatform.Jupiter);
 
-    const ix = await builder.buildInstruction(vaultData, signer);
+    const ix = await builder.buildInstruction(vaultData, signer, type);
 
     const messageV0 = new TransactionMessage({
       payerKey: signer,

@@ -1,7 +1,7 @@
 services:
   db:
     container_name: backyard_db
-    image: postgres:16
+    image: postgres:16-alpine
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
