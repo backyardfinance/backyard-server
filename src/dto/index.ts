@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsDate,
+  IsEmail,
   IsEnum,
   IsNumber,
   IsNumberString,
@@ -9,6 +10,7 @@ import {
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export enum VaultPlatform {
   Jupiter = 'Jupiter',
@@ -342,4 +344,22 @@ export class VerifySiwsDto {
   @ApiProperty()
   @IsString()
   address!: string;
+}
+
+export class SendEmailDto {
+  @IsEmail()
+  @ApiProperty()
+  @Transform((email) => email.value.toLowerCase())
+  email: string;
+}
+
+export class VerifyEmailDto {
+  @IsEmail()
+  @ApiProperty()
+  @Transform((email) => email.value.toLowerCase())
+  email: string;
+
+  @IsString()
+  @ApiProperty()
+  code: string;
 }
