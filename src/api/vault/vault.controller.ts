@@ -7,6 +7,7 @@ import {
   VaultInfoResponse,
   VaultInfoStrategyResponse,
 } from '../../dto';
+import { WalletToUserPipe } from '../../common/pipes/wallet-to-user-pipe';
 
 @Controller('vaults')
 export class VaultController {
@@ -24,19 +25,19 @@ export class VaultController {
     return this.vaultService.getVaultHistoryByVaultId(vaultId);
   }
 
-  @Get('/history/:userId/:vaultId')
+  @Get('/history/:walletAddress/:vaultId')
   @ApiOkResponse({ type: UserVaultHistoryInfoResponse, isArray: true })
   async getVaultHistory(
-    @Param('userId') userId: string,
+    @Param('walletAddress', WalletToUserPipe) userId: string,
     @Param('vaultId') vaultId: string,
   ) {
     return this.vaultService.getVaultHistory(vaultId, userId);
   }
 
-  @Get('/:userId/:vaultId')
+  @Get('/:walletAddress/:vaultId')
   @ApiOkResponse({ type: VaultInfoStrategyResponse })
   async getVault(
-    @Param('userId') userId: string,
+    @Param('walletAddress', WalletToUserPipe) userId: string,
     @Param('vaultId') vaultId: string,
   ) {
     return this.vaultService.getVaultUserInfo(vaultId, userId);

@@ -36,13 +36,17 @@ export class StrategyService {
   }
 
   async createStrategy(
-    userId: string,
+    walletAddress: string,
     name: string,
     vaultDeposits: Record<string, number>,
   ) {
     try {
+      const user = await this.db.user.findUnique({
+        where: { wallet: walletAddress },
+        select: { id: true },
+      });
       const strategy = await this.db.strategy.create({
-        data: { user_id: userId, name },
+        data: { user_id: user.id, name },
         select: { id: true },
       });
       await this.addStrategyVaults(strategy.id, vaultDeposits);

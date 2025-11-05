@@ -16,17 +16,6 @@ export class AdminController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('/users')
-  @ApiOkResponse({ type: UsertInfoResponse, isArray: true })
-  async getUsers() {
-    return await this.userService.getUsers();
-  }
-
-  @Post('create-user')
-  async createUser(@Body() dto: CreateUserDto) {
-    return await this.userService.createUser(dto);
-  }
-
   /*@Post('create-vault')
   async createVault(@Body() dto: CreateVaultDto) {
     const ourLpMint = Keypair.generate();

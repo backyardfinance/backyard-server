@@ -3,6 +3,7 @@ import { SolanaService } from '../../services/solana/solana.service';
 import { TokenInfoResponse } from '../../dto';
 import { DatabaseService } from '../../database';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { WalletToUserPipe } from '../../common/pipes/wallet-to-user-pipe';
 
 @Controller('solana')
 export class SolanaController {
@@ -19,9 +20,11 @@ export class SolanaController {
   // for interest earned -> query underlying vault for LP token and get its price with CRON
   // EASY -> total_pos -> deposited + interest earned
 
-  @Get('/user-tokens/:userId')
+  @Get('/user-tokens/:walletAddress')
   @ApiOkResponse({ type: TokenInfoResponse, isArray: true })
-  async getUserTokens(@Param('userId') userId: string) {
+  async getUserTokens(
+    @Param('walletAddress', WalletToUserPipe) userId: string,
+  ) {
     return await this.solanaService.getUserTokens(userId);
   }
 

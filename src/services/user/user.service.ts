@@ -4,10 +4,16 @@ import { generateNonce } from 'siwe';
 import * as nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import { DatabaseService } from '../../database';
-import { CreateUserDto, SendEmailDto, VerifyEmailDto } from '../../dto';
+import {
+  CreateUserDto,
+  SendEmailDto,
+  UpdateUserDto,
+  VerifyEmailDto,
+} from '../../dto';
 import { EmailService } from '../email/email.service';
 import { EmailTemplate } from '../email/types';
 import { VerificationService } from './verification/verification.service';
+import { TwitterService } from '../scraper/twitter.scraper.service';
 
 @Injectable()
 export class UserService {
@@ -15,6 +21,7 @@ export class UserService {
     private readonly db: DatabaseService,
     private readonly emailService: EmailService,
     private readonly verificationService: VerificationService,
+    private readonly twitterService: TwitterService,
   ) {}
 
   public async getUsers() {
@@ -23,6 +30,7 @@ export class UserService {
       userId: user.id,
       name: user.name,
       wallet: user.wallet,
+      email: user.email,
     }));
   }
 
@@ -33,6 +41,25 @@ export class UserService {
         name: dto.name,
       },
     });
+  }
+
+  public async updateUserByWallet(walletAddress: string, dto: UpdateUserDto) {
+    const user = await this.db.user.findUnique({
+      where: { wallet: walletAddress },
+    });
+
+    if (!user) {
+      throw new Error('User not founded.');
+    }
+
+    return this.db.user.update({
+      where: { wallet: walletAddress },
+      data: dto,
+    });
+  }
+
+  public verifyUserTwitterActions(userId: string) {
+    return this.twitterService.verifyTwitterAccount(userId);
   }
 
   public async sendEmail(dto: SendEmailDto) {

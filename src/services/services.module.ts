@@ -21,6 +21,7 @@ import { UserService } from './user/user.service';
 import { QueueModule } from '../queue/queue.module';
 import { EmailService } from './email/email.service';
 import { VerificationService } from './user/verification/verification.service';
+import { TwitterService } from './scraper/twitter.scraper.service';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { VerificationService } from './user/verification/verification.service';
     UserService,
     EmailService,
     VerificationService,
+    TwitterService,
   ],
   exports: [
     SolanaService,

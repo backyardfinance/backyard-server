@@ -7,15 +7,16 @@ import {
   StrategyInfoResponse,
 } from '../../dto';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { WalletToUserPipe } from '../../common/pipes/wallet-to-user-pipe';
 
 @Controller('strategies')
 export class StrategyController {
   constructor(private readonly strategyService: StrategyService) {}
 
-  @Get('/user/:userId')
+  @Get('/user/:walletAddress')
   @ApiOkResponse({ type: StrategyInfoResponse, isArray: true })
   async getStrategies(
-    @Param('userId') userId: string,
+    @Param('walletAddress', WalletToUserPipe) userId: string,
   ): Promise<StrategyInfoResponse[]> {
     return this.strategyService.getStrategiesInfo(userId);
   }
@@ -28,10 +29,10 @@ export class StrategyController {
     return this.strategyService.getStrategyHistory(strategyId);
   }
 
-  @Get('portfolio/history/:userId')
+  @Get('portfolio/history/:walletAddress')
   @ApiOkResponse({ type: StrategyHistoryPoint, isArray: true })
   async getPortfolioHistory(
-    @Param('userId') userId: string,
+    @Param('walletAddress', WalletToUserPipe) userId: string,
   ): Promise<PortfolioHistoryPoint[]> {
     return this.strategyService.getUserPortfolioHistory(userId);
   }
@@ -51,7 +52,7 @@ export class StrategyController {
   @Post('create')
   async create(@Body() dto: CreateStrategyDto) {
     return this.strategyService.createStrategy(
-      dto.userId,
+      dto.walletAddress,
       dto.name,
       dto.vaultDeposits,
     );

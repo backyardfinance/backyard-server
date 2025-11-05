@@ -41,13 +41,27 @@ export class CreateVaultDto {
   uri: string;
 }
 
+export class UpdateUserDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsEmail()
+  walletAddress?: string;
+}
+
 export class CreateStrategyDto {
   @IsString()
   @ApiProperty()
   name: string;
   @IsString()
   @ApiProperty()
-  userId!: string;
+  walletAddress!: string;
   @IsObject()
   @ApiProperty({
     type: 'object',
@@ -169,16 +183,20 @@ export class VaultInfo {
   @ApiProperty()
   publicKey: string;
 }
+// TODO Rename
 export class UsertInfoResponse {
-  @IsString()
-  @ApiProperty()
-  userId: string;
+  // @IsString()
+  // @ApiProperty()
+  // userId: string;
   @IsString()
   @ApiProperty()
   name: string;
   @IsString()
   @ApiProperty()
   wallet: string;
+  @IsString()
+  @ApiProperty()
+  email: string;
 }
 
 export class VaultInfoResponse extends VaultInfo {
@@ -362,4 +380,14 @@ export class VerifyEmailDto {
   @IsString()
   @ApiProperty()
   code: string;
+}
+
+export class TwitterVerifyDto {
+  @IsBoolean()
+  @ApiProperty()
+  subscribed: boolean;
+
+  @IsBoolean()
+  @ApiProperty()
+  retweeted: boolean;
 }

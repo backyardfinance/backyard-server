@@ -1,8 +1,25 @@
-import { Body, Controller, Post, Query } from '@nestjs/common';
-import { SendEmailDto, VerifyEmailDto, VerifySiwsDto } from '../../dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  CreateUserDto,
+  SendEmailDto,
+  TwitterVerifyDto,
+  UpdateUserDto,
+  UsertInfoResponse,
+  VerifyEmailDto,
+} from '../../dto';
 import { UserService } from '../../services/user/user.service';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller('user')
+@ApiTags('Users')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -16,13 +33,38 @@ export class UserController {
   //   return this.userService.verifySiws(dto);
   // }
 
+  @Get()
+  @ApiOkResponse({ type: UsertInfoResponse, isArray: true })
+  async getUsers() {
+    return await this.userService.getUsers();
+  }
+
+  @Post()
+  async createUser(@Body() dto: CreateUserDto) {
+    return await this.userService.createUser(dto);
+  }
+
   @Post('send-email')
   public async sendEmail(@Body() body: SendEmailDto) {
     return this.userService.sendEmail(body);
   }
 
-  @Post('verify-code')
+  @Post('verify-email-code')
   async verify(@Body() dto: VerifyEmailDto) {
     return this.userService.verifyEmail(dto);
+  }
+
+  @Post('validate-twitter')
+  @ApiOkResponse({ type: TwitterVerifyDto })
+  async validateUser(@Query('userId') userId: string) {
+    return await this.userService.verifyUserTwitterActions(userId);
+  }
+
+  @Patch(':walletAddress')
+  async updateUser(
+    @Param('walletAddress') wallet: string,
+    @Body() dto: UpdateUserDto,
+  ) {
+    return this.userService.updateUserByWallet(wallet, dto);
   }
 }
