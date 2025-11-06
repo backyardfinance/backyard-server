@@ -18,6 +18,7 @@ export class AuthController {
   @Get('/x/callback')
   @ApiOkResponse({ type: UserXDto })
   async callback(@Query('code') code: string, @Res() res: Response) {
-    return await this.authService.handleCallback(code);
+    const user = await this.authService.handleCallback(code);
+    return res.json(user);
   }
 }
