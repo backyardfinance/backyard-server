@@ -8,6 +8,7 @@ import { TransactionController } from './transaction/transaction.controller';
 import { QuoteController } from './quote/quote.controller';
 import { StrategyController } from './strategy/strategy.controller';
 import { UserController } from './user/user.controller';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
   imports: [ServicesModule, DatabaseModule],
@@ -19,6 +20,7 @@ import { UserController } from './user/user.controller';
     QuoteController,
     StrategyController,
     UserController,
+    AuthController,
   ],
   providers: [],
 })

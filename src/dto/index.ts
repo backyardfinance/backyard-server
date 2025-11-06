@@ -391,3 +391,13 @@ export class TwitterVerifyDto {
   @ApiProperty()
   retweeted: boolean;
 }
+
+export class UserXDto {
+  @IsString()
+  @ApiProperty()
+  xId: string;
+
+  @IsString()
+  @ApiProperty()
+  xUserName: string;
+}
