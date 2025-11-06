@@ -14,8 +14,11 @@ import { JupiterQuoteAdapter } from './quote/adapters/jupiter-quote.adapter';
 import { StrategyService } from './strategy/strategy.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UserService } from './user/user.service';
+import { CNftController } from './cnft/cnft.controller';
+import { CNftService } from './cnft/cnft.service';
 
 @Module({
+  controllers: [CNftController],
   imports: [DatabaseModule, ScheduleModule.forRoot()],
   providers: [
     SolanaService,
@@ -31,6 +34,7 @@ import { UserService } from './user/user.service';
     JupiterQuoteAdapter,
     StrategyService,
     UserService,
+    CNftService,
   ],
   exports: [
     SolanaService,
