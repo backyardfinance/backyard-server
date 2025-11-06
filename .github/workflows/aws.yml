@@ -82,6 +82,10 @@ jobs:
           --build-arg PROGRAM_ID="${{ secrets.PROGRAM_ID }}" \
           --build-arg MASTER_WALLET_PRIVATE_KEY="${{ secrets.MASTER_WALLET_PRIVATE_KEY }}" \
           --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+          --build-arg MAIL_HOST="${{ secrets.MAIL_HOST }}" \
+          --build-arg MAIL_PORT="${{ secrets.MAIL_PORT }}" \
+          --build-arg MAIL_USER="${{ secrets.MAIL_USER }}" \
+          --build-arg GMAIL_APP_PASSWORD="${{ secrets.GMAIL_APP_PASSWORD }}" \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
           . --push
