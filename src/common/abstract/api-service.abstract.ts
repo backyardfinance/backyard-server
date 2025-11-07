@@ -1,15 +1,15 @@
 import { Prisma, Vault } from '@prisma/client';
 import { VaultPlatform } from '../../dto';
-import { DatabaseService } from '../../database';
 import { Decimal } from '@prisma/client/runtime/library';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 export abstract class ApiService {
-  constructor(protected readonly db: DatabaseService) {}
+  constructor(protected readonly prisma: PrismaService) {}
 
   protected abstract vaultPlatform: VaultPlatform;
 
   protected async getVaults(): Promise<Vault[]> {
-    return this.db.vault.findMany({
+    return this.prisma.vault.findMany({
       where: {
         platform: this.vaultPlatform,
       },
@@ -21,7 +21,7 @@ export abstract class ApiService {
   protected async upsertVaultsIntoDB(data: any[]): Promise<void> {
     const vaults: Prisma.VaultUpdateInput[] = this.transformApiResponse(data);
 
-    await this.db.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       for (const update of vaults) {
         const { id, ...vaultData } = update as any; // ensure each update has vault ID
 

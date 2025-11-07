@@ -4,18 +4,18 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '../../database';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export class WalletToUserPipe implements PipeTransform {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async transform(wallet: string) {
     if (!wallet) {
       throw new BadRequestException('Wallet is required');
     }
 
-    const user = await this.db.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { wallet },
       select: { id: true },
     });
