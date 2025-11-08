@@ -1,11 +1,9 @@
-import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ExceptionFilter } from './utils';
 import { ConfigService } from './config/config.module';
-import * as TR from './test_runner';
-// import { testSeedDb } from './test_seed_db';
+import { ExceptionFilter } from './common/utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,7 +13,6 @@ async function bootstrap() {
 
   app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost)));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const config = new DocumentBuilder()
     .setTitle('BACKYARD FINANCE API')
@@ -37,15 +34,5 @@ async function bootstrap() {
   app.getHttpAdapter().getInstance().locals.swaggerDocument = document;
 
   await app.listen(configService.getOrThrow<number>('port'));
-
-  console.log(
-    "configService.get('app_test_mode'): ",
-    configService.get('app_test_mode'),
-  );
-
-  if (configService.get('app_test_mode')) {
-    // await testSeedDb(app);
-    await TR.testMain(app);
-  }
 }
 bootstrap();
