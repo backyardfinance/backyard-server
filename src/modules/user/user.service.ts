@@ -19,7 +19,7 @@ import { TwitterService } from '../scraper/twitter-scraper.service';
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly mailService: MailService,
+    // private readonly mailService: MailService,
     private readonly verificationService: VerificationService,
     private readonly twitterService: TwitterService,
   ) {}
@@ -74,14 +74,14 @@ export class UserService {
       );
     }
     const verifyCode = await this.verificationService.issueCode(user.id);
-    await this.mailService.sendVerifyCodeEmail({
-      to: dto.email,
-      subject: 'Welcome to Backyard Finance',
-      template: EmailTemplate.VerifyCode,
-      data: {
-        verifyCode: verifyCode,
-      },
-    });
+    // await this.mailService.sendVerifyCodeEmail({
+    //   to: dto.email,
+    //   subject: 'Welcome to Backyard Finance',
+    //   template: EmailTemplate.VerifyCode,
+    //   data: {
+    //     verifyCode: verifyCode,
+    //   },
+    // });
   }
 
   public async verifyEmail(dto: VerifyEmailDto) {
