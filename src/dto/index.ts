@@ -313,13 +313,8 @@ export class PortfolioHistoryPoint {
 
 export class CreateUserDto {
   @IsString()
-  @IsOptional()
   @ApiProperty()
-  name: string;
-
-  @IsString()
-  @ApiProperty()
-  walletAddress: string;
+  wallet: string;
 }
 
 export class VerifySiwsDto {

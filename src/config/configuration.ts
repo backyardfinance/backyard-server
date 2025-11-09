@@ -6,6 +6,8 @@ export default () => ({
   rpc_url: env.string('RPC_URL'),
   master_wallet_private_key: env.string('MASTER_WALLET_PRIVATE_KEY'),
   app_test_mode: env.bool('APP_TEST_MODE', false),
+  jwt_secret: env.string('JWT_SECRET'),
+  jwt_refresh_secret: env.string('JWT_REFRESH_SECRET'),
   // mail: {
   //   host: env.string('MAIL_HOST'),
   //   port: env.string('MAIL_PORT'),

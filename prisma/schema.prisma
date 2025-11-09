@@ -21,7 +21,6 @@ enum VaultPlatform {
 
 model User {
   id         String     @id @default(uuid())
-  name       String?
   email      String?    @unique
   wallet     String     @unique
   strategies Strategy[]

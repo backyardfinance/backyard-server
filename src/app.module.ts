@@ -13,6 +13,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 // import { QueueModule } from './modules/queue/queue.module';
 import { JupiterModule } from './modules/jupiter/jupiter.module';
 import { KaminoModule } from './modules/kamino/kamino.module';
+import { WhitelistModule } from './modules/whitelist/whitelist.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { KaminoModule } from './modules/kamino/kamino.module';
     StrategyModule,
     JupiterModule,
     KaminoModule,
+    WhitelistModule,
   ],
   controllers: [AppController],
   providers: [],
