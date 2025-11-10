@@ -1,40 +1,29 @@
-FROM node:24-alpine
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
-ARG ENV
-ARG PORT
-ARG RPC_URL
-ARG PROGRAM_ID
-ARG MASTER_WALLET_PRIVATE_KEY
-ARG DATABASE_URL
-ARG MAIL_HOST
-ARG MAIL_PORT
-ARG MAIL_USER
-ARG GMAIL_APP_PASSWORD
+COPY package.json yarn.lock ./
+COPY prisma ./prisma
 
-# Copy application files
-COPY . /app
-
-# Install dependencies
 RUN yarn install --frozen-lockfile
 
-# Build the application
-RUN yarn build
+COPY . .
 
-# Expose the application port
+RUN yarn prisma generate
+RUN yarn build
+RUN yarn install --frozen-lockfile --production
+
+FROM node:24-alpine AS run
+
+WORKDIR /app
+
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./
+
+USER node
+
 EXPOSE 4000
 
-ENV ENV=prod
-ENV RPC_URL=${RPC_URL}
-ENV PROGRAM_ID=${PROGRAM_ID}
-ENV MASTER_WALLET_PRIVATE_KEY=${MASTER_WALLET_PRIVATE_KEY}
-ENV DATABASE_URL=${DATABASE_URL}
-ENV PORT=4000
-ENV MAIL_HOST=${MAIL_HOST}
-ENV MAIL_PORT=${MAIL_PORT}
-ENV MAIL_USER=${MAIL_USER}
-ENV GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
-
-# Start the application
-ENTRYPOINT ["yarn", "start:prod"]
+CMD ["sh", "-c", "yarn run start:prod"]
