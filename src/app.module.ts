@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { ConfigModule } from './config/config.module';
+import { ConfigModule, ConfigService } from './config/config.module';
 import configuration from './config/configuration';
 import { VaultModule } from './modules/vault/vault.modules';
 import { SolanaModule } from './modules/solana/solana.module';
@@ -14,10 +14,22 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { JupiterModule } from './modules/jupiter/jupiter.module';
 import { KaminoModule } from './modules/kamino/kamino.module';
 import { WhitelistModule } from './modules/whitelist/whitelist.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
     ConfigModule(configuration),
+    CacheModule.registerAsync({
+      inject: [ConfigService],
+      isGlobal: true,
+      useFactory: async (config: ConfigService) => {
+        const redis = new KeyvRedis(config.get<string>('REDIS'));
+        return {
+          stores: [redis],
+        };
+      },
+    }),
     // QueueModule.forRoot({
     //   interval: 1000,
     //   intervalCap: 3,
