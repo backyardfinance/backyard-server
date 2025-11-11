@@ -13,10 +13,12 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 // import { QueueModule } from './modules/queue/queue.module';
 import { JupiterModule } from './modules/jupiter/jupiter.module';
 import { KaminoModule } from './modules/kamino/kamino.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     ConfigModule(configuration),
+    CacheModule.register(),
     // QueueModule.forRoot({
     //   interval: 1000,
     //   intervalCap: 3,
