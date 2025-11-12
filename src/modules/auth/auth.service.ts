@@ -30,8 +30,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
-    this.clientId = this.config.get<string>('TWITTER_CLIENT_ID');
-    this.redirectUri = this.config.get<string>('TWITTER_REDIRECT_URI');
+    this.clientId = this.config.get<string>('twitter.client_id');
+    this.redirectUri = this.config.get<string>('twitter.redirect_uri');
   }
 
   async claimNonce(dto: ClaimNonceDto): Promise<ClaimNonceResponseDto> {
@@ -121,9 +121,9 @@ export class AuthService {
 
   async handleCallback(code: string) {
     const tokenUrl = 'https://api.x.com/2/oauth2/token';
-    const redirectUri = this.config.get<string>('TWITTER_REDIRECT_URI');
-    const clientId = this.config.get<string>('TWITTER_CLIENT_ID');
-    const clientSecret = this.config.get<string>('TWITTER_CLIENT_SECRET');
+    const redirectUri = this.config.get<string>('twitter.redirect_uri');
+    const clientId = this.config.get<string>('twitter.client_id');
+    const clientSecret = this.config.get<string>('twitter.client_secret');
 
     const body = new URLSearchParams({
       code,
