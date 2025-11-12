@@ -5,12 +5,14 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import {
+  CheckFollowDto,
+  CheckRetweetDto,
   CreateUserDto,
+  FollowStatusResponse,
+  RetweetStatusResponse,
   SendEmailDto,
-  TwitterVerifyDto,
   UpdateUserDto,
   UsertInfoResponse,
   VerifyEmailDto,
@@ -54,10 +56,18 @@ export class UserController {
     return this.userService.verifyEmail(dto);
   }
 
-  @Post('validate-twitter')
-  @ApiOkResponse({ type: TwitterVerifyDto })
-  async validateUser(@Query('userId') userId: string) {
-    return await this.userService.verifyUserTwitterActions(userId);
+  @Post('check-follow')
+  @ApiOkResponse({ type: FollowStatusResponse })
+  async checkFollow(@Body() dto: CheckFollowDto) {
+    // refactor to use username of logged-in twitter account
+    return await this.userService.checkUserFollow(dto.twitter_username);
+  }
+
+  @Post('check-retweet')
+  @ApiOkResponse({ type: RetweetStatusResponse })
+  async checkRetweet(@Body() dto: CheckRetweetDto) {
+    // refactor to use username of logged-in twitter account
+    return await this.userService.checkUserRetweet(dto.twitter_username);
   }
 
   @Patch(':walletAddress')

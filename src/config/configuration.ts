@@ -19,5 +19,9 @@ export default () => ({
     client_id: env.string('TWITTER_CLIENT_ID'),
     client_secret: env.string('TWITTER_CLIENT_SECRET'),
     redirect_uri: env.string('TWITTER_REDIRECT_URI'),
+    scraper_url: env.string('TWITTER_SCRAPER_URL'),
+    scraper_token: env.string('TWITTER_SCRAPER_TOKEN'),
+    target_username: env.string('TWITTER_TARGET_USERNAME'),
+    target_tweet_id: env.string('TWITTER_TARGET_TWEET_ID'),
   },
 });

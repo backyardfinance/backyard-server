@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   CreateUserDto,
+  FollowStatusResponse,
+  RetweetStatusResponse,
   SendEmailDto,
   UpdateUserDto,
   VerifyEmailDto,
@@ -74,8 +76,16 @@ export class UserService {
     });
   }
 
-  verifyUserTwitterActions(userId: string) {
-    return this.twitterService.verifyTwitterAccount(userId);
+  async checkUserFollow(
+    twitterUsername: string,
+  ): Promise<FollowStatusResponse> {
+    return this.twitterService.checkFollow(twitterUsername);
+  }
+
+  async checkUserRetweet(
+    twitterUsername: string,
+  ): Promise<RetweetStatusResponse> {
+    return this.twitterService.checkRetweet(twitterUsername);
   }
 
   async sendEmail(dto: SendEmailDto) {

@@ -366,3 +366,43 @@ export class UserXDto {
   @ApiProperty()
   xUserName: string;
 }
+
+export class CheckFollowDto {
+  @IsString()
+  @ApiProperty()
+  twitter_username: string;
+}
+
+export class CheckRetweetDto {
+  @IsString()
+  @ApiProperty()
+  twitter_username: string;
+}
+
+export class FollowStatusResponse {
+  @IsBoolean()
+  @ApiProperty()
+  is_following: boolean;
+
+  @IsString()
+  @ApiProperty()
+  checked_by: string;
+
+  @IsString()
+  @ApiProperty()
+  checked_at: string;
+}
+
+export class RetweetStatusResponse {
+  @IsBoolean()
+  @ApiProperty()
+  has_retweeted: boolean;
+
+  @IsString()
+  @ApiProperty()
+  checked_by: string;
+
+  @IsString()
+  @ApiProperty()
+  checked_at: string;
+}
