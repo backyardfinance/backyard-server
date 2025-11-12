@@ -26,4 +26,4 @@ USER node
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "yarn run start:prod"]
+CMD ["sh", "-c", "yarn run start:migrate:prod"]
