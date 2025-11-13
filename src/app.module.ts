@@ -18,6 +18,7 @@ import KeyvRedis from '@keyv/redis';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { QuoteModule } from './modules/quote/quote.module';
 import { CronModule } from './modules/cron/cron.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CronModule } from './modules/cron/cron.module';
       },
     }),
     // CronModule,
+    AdminModule,
     PrismaModule,
     VaultModule,
     SolanaModule,

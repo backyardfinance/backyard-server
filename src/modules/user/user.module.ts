@@ -5,9 +5,10 @@ import { VerificationService } from './verification/verification.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TwitterModule } from '../scraper/scraper.module';
 import { MailModule } from '../mail/mail.module';
+import { MetaplexModule } from '../metaplex/metaplex.module';
 
 @Module({
-  imports: [PrismaModule, TwitterModule, MailModule],
+  imports: [PrismaModule, TwitterModule, MailModule, MetaplexModule],
   controllers: [UserController],
   providers: [UserService, VerificationService],
   exports: [UserService],
