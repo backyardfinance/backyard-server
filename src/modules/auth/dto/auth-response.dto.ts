@@ -6,4 +6,10 @@ export class AuthResponseDto {
 
   @ApiProperty()
   wallet: string;
+
+  @ApiProperty()
+  accessToken: string;
+
+  @ApiProperty()
+  refreshToken: string;
 }
