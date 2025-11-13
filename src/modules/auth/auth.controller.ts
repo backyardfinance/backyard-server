@@ -47,14 +47,14 @@ export class AuthController {
     //TODO: ref
     response.cookie('accessToken', accessToken, {
       httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 15 * 60 * 1000,
     });
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -74,14 +74,14 @@ export class AuthController {
     //TODO: ref
     response.cookie('accessToken', accessToken, {
       httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 15 * 60 * 1000,
     });
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

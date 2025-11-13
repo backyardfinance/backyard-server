@@ -25,7 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MetaplexCNftService } from '../metaplex/metaplex-cnft';
 import { publicKey } from '@metaplex-foundation/umi';
 
-@ApiTags('Users')
+@ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(
