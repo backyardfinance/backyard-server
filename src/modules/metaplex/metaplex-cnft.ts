@@ -15,7 +15,7 @@ import {
   Umi,
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Connection } from '@solana/web3.js';
 import { PinataSDK } from 'pinata';
@@ -164,6 +164,8 @@ export class MetaplexCNftService {
   }
 
   async prepareMintTransaction(user: PublicKey) {
+    const hasNft = await this.checkUserHasNFT(user);
+    if (hasNft) throw new BadRequestException('User already claimed the NFT');
     const metadataUri = await this.createNFTMetadata(user.toString());
 
     const mintBuilder = mintV2(this.umi, {
@@ -191,5 +193,28 @@ export class MetaplexCNftService {
       transaction: base64Tx,
       metadataUri,
     };
+  }
+
+  async checkUserHasNFT(userWalletAddress: string) {
+    try {
+      const userPublicKey = publicKey(userWalletAddress);
+
+      const assets = await this.umi.rpc.getAssetsByOwner({
+        owner: userPublicKey,
+      });
+
+      const hasNFT = assets.items.some((asset) =>
+        asset.grouping?.some(
+          (group) =>
+            group.group_key === 'collection' &&
+            group.group_value === this.collectionAddress.toString(),
+        ),
+      );
+
+      return hasNFT;
+    } catch (error) {
+      console.error('Error checking NFT ownership:', error);
+      return false;
+    }
   }
 }
