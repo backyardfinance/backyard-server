@@ -30,9 +30,39 @@ export class VerificationService {
       return { ok: false, reason: 'INVALID_CODE' };
     }
 
-    await this.prisma.verificationCode.update({
-      where: { id: record.id },
-      data: { consumedAt: new Date() },
+    // Use transaction to update verification code, user, and whitelist participant
+    await this.prisma.$transaction(async (tx) => {
+      // Mark verification code as consumed
+      await tx.verificationCode.update({
+        where: { id: record.id },
+        data: { consumedAt: new Date() },
+      });
+
+      // Update user's email verification status
+      await tx.user.update({
+        where: { id: userId },
+        data: { isEmailVerified: true },
+      });
+
+      // Update or create whitelist participant entry
+      const existingWhitelist = await tx.whitelistParticipant.findUnique({
+        where: { userId },
+      });
+
+      if (existingWhitelist) {
+        await tx.whitelistParticipant.update({
+          where: { userId },
+          data: { email_verified: true },
+        });
+      } else {
+        await tx.whitelistParticipant.create({
+          data: {
+            userId,
+            wallet_connected: true, // User must have wallet to be authenticated
+            email_verified: true,
+          },
+        });
+      }
     });
 
     return { ok: true };

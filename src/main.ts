@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from './config/config.module';
 import { ExceptionFilter } from './common/utils';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,21 @@ async function bootstrap() {
 
   app.enableCors();
   app.use(cookieParser());
+
+  // Configure session for OAuth state management
+  app.use(
+    session({
+      secret: configService.get<string>('session_secret'),
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: configService.get<string>('node_env') === 'production',
+        sameSite: 'lax', // Allow cookies to be sent with top-level navigation (OAuth redirects)
+        maxAge: 10 * 60 * 1000, // 10 minutes
+      },
+    }),
+  );
 
   app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost)));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));

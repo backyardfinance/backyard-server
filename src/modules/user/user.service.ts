@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   CreateUserDto,
+  FollowStatusResponse,
+  RetweetStatusResponse,
   SendEmailDto,
   UpdateUserDto,
   VerifyEmailDto,
@@ -9,12 +11,13 @@ import { VerificationService } from './verification/verification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TwitterService } from '../scraper/twitter-scraper.service';
 import { User } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
-    // private readonly mailService: MailService,
+    private readonly mailService: MailService,
     private readonly verificationService: VerificationService,
     private readonly twitterService: TwitterService,
   ) {}
@@ -32,8 +35,16 @@ export class UserService {
     });
 
     if (!user) {
+      // Create user and whitelist participant in a transaction
       user = await this.prisma.user.create({
-        data: { wallet },
+        data: {
+          wallet,
+          WhitelistParticipant: {
+            create: {
+              wallet_connected: true,
+            },
+          },
+        },
       });
     }
 
@@ -73,43 +84,164 @@ export class UserService {
     });
   }
 
-  verifyUserTwitterActions(userId: string) {
-    return this.twitterService.verifyTwitterAccount(userId);
-  }
-
-  async sendEmail(dto: SendEmailDto) {
+  async checkUserFollow(userId: string): Promise<FollowStatusResponse> {
+    // Get user and ensure Twitter is linked
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
+      where: { id: userId },
     });
+
     if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!user.xUsername) {
       throw new Error(
-        'User with this email does not exist. Please register first.',
+        'Twitter account not linked. Please link your Twitter account first.',
       );
     }
-    const verifyCode = await this.verificationService.issueCode(user.id);
-    // await this.mailService.sendVerifyCodeEmail({
-    //   to: dto.email,
-    //   subject: 'Welcome to Backyard Finance',
-    //   template: EmailTemplate.VerifyCode,
-    //   data: {
-    //     verifyCode: verifyCode,
-    //   },
-    // });
+
+    // Check if user follows the target account
+    const followStatus = await this.twitterService.checkFollow(user.xUsername);
+
+    // Update WhitelistParticipant if user is following
+    if (followStatus.is_following) {
+      const existingWhitelist =
+        await this.prisma.whitelistParticipant.findUnique({
+          where: { userId },
+        });
+
+      if (existingWhitelist) {
+        await this.prisma.whitelistParticipant.update({
+          where: { userId },
+          data: { twitter_followed: true },
+        });
+      } else {
+        await this.prisma.whitelistParticipant.create({
+          data: {
+            userId,
+            wallet_connected: true,
+            twitter_linked: true,
+            twitter_followed: true,
+          },
+        });
+      }
+    }
+
+    return followStatus;
   }
 
-  public async verifyEmail(dto: VerifyEmailDto) {
+  async checkUserRetweet(userId: string): Promise<RetweetStatusResponse> {
+    // Get user and ensure Twitter is linked
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
+      where: { id: userId },
     });
+
     if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!user.xUsername) {
       throw new Error(
-        'User with this email does not exist. Please register first.',
+        'Twitter account not linked. Please link your Twitter account first.',
       );
     }
-    return await this.verificationService.verifyCode(user.id, dto.code);
+
+    // Check if user retweeted the target post
+    const retweetStatus = await this.twitterService.checkRetweet(
+      user.xUsername,
+    );
+
+    // Update WhitelistParticipant if user has retweeted
+    if (retweetStatus.has_retweeted) {
+      const existingWhitelist =
+        await this.prisma.whitelistParticipant.findUnique({
+          where: { userId },
+        });
+
+      if (existingWhitelist) {
+        await this.prisma.whitelistParticipant.update({
+          where: { userId },
+          data: { post_retweeted: true },
+        });
+      } else {
+        await this.prisma.whitelistParticipant.create({
+          data: {
+            userId,
+            wallet_connected: true,
+            twitter_linked: true,
+            post_retweeted: true,
+          },
+        });
+      }
+    }
+
+    return retweetStatus;
+  }
+
+  async sendEmail(userId: string, dto: SendEmailDto) {
+    // Update the user's email field with the provided email
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { email: dto.email },
+    });
+
+    // Generate verification code for the authenticated user
+    const verifyCode = await this.verificationService.issueCode(userId);
+
+    // Send verification email
+    await this.mailService.sendVerifyCodeEmail({
+      to: dto.email,
+      subject: 'Welcome to Backyard Finance',
+      data: {
+        verifyCode: verifyCode,
+      },
+    });
+  }
+
+  public async verifyEmail(userId: string, dto: VerifyEmailDto) {
+    // Verify the code against the authenticated user's ID
+    // The verification service will update isEmailVerified and WhitelistParticipant.email_verified
+    return await this.verificationService.verifyCode(userId, dto.code);
+  }
+
+  async linkTwitterToUser(
+    userId: string,
+    xId: string,
+    xUsername: string,
+  ): Promise<User> {
+    // Update user with Twitter information
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        xId,
+        xUsername,
+      },
+    });
+
+    // Create or update WhitelistParticipant
+    const existingWhitelist = await this.prisma.whitelistParticipant.findUnique(
+      {
+        where: { userId },
+      },
+    );
+
+    if (existingWhitelist) {
+      await this.prisma.whitelistParticipant.update({
+        where: { userId },
+        data: {
+          twitter_linked: true,
+        },
+      });
+    } else {
+      await this.prisma.whitelistParticipant.create({
+        data: {
+          userId,
+          wallet_connected: true, // User already has wallet if they're authenticated
+          twitter_linked: true,
+        },
+      });
+    }
+
+    return updatedUser;
   }
 }
