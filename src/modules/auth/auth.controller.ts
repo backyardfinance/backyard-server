@@ -18,8 +18,8 @@ import { ClaimNonceDto } from './dto/claim-nonce.dto';
 import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { TwitterAuthGuard } from './guards/twitter-auth.guard';
+import { TwitterAuthWithTokenGuard } from './guards/twitter-auth-with-token.guard';
 import { TestLoginDto } from './dto/test-login.dto';
-import { AuthResult } from './interfaces/auth.interface';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -39,90 +39,67 @@ export class AuthController {
   @ApiOkResponse({ type: AuthResponseDto })
   async verifySignature(
     @Body() dto: VerifySignatureDto,
-    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponseDto> {
     const result = await this.authService.verifySignature(dto);
     const { user, accessToken, refreshToken } = result;
+    const userId = user.userId;
+    const wallet = user.wallet;
 
-    //TODO: ref
-    response.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-    response.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return user;
+    return {
+      userId,
+      wallet,
+      accessToken,
+      refreshToken,
+    };
   }
 
   // TEST ONLY: Login without wallet signature verification
   // TODO: Remove this endpoint before deploying to production
   @Post('test-login')
-  async testLogin(
-    @Body() dto: TestLoginDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthResult> {
+  async testLogin(@Body() dto: TestLoginDto): Promise<AuthResponseDto> {
     const result = await this.authService.testLogin(dto);
-    const { accessToken, refreshToken } = result;
+    const { user, accessToken, refreshToken } = result;
+    const userId = user.userId;
+    const wallet = user.wallet;
 
-    //TODO: ref
-    response.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-    response.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return result;
+    return {
+      userId,
+      wallet,
+      accessToken,
+      refreshToken,
+    };
   }
 
   @Post('refresh')
   @ApiOkResponse({ type: AuthResponseDto })
-  async refreshToken(
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthResponseDto> {
-    const refreshToken = request.cookies['refreshToken'];
+  async refreshToken(@Req() request: Request): Promise<AuthResponseDto> {
+    const authHeader = request.headers.authorization;
+    if (!authHeader)
+      throw new UnauthorizedException('No authorization header provided');
+
+    const refreshToken = authHeader.startsWith('Bearer ')
+      ? authHeader.substring(7)
+      : authHeader;
     if (!refreshToken)
       throw new UnauthorizedException('No refresh token provided');
 
     const result = await this.authService.refreshTokens(refreshToken);
     const { user, accessToken, refreshToken: newRefreshToken } = result;
+    const userId = user.userId;
+    const wallet = user.wallet;
 
-    //TODO: ref
-    response.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-    response.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      // secure: true,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return user;
+    return {
+      userId,
+      wallet,
+      accessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 
   @Get('/x/login')
-  @UseGuards(TwitterAuthGuard)
+  @UseGuards(TwitterAuthWithTokenGuard)
   async login() {
-    // Guard handles JWT verification and state parameter
-    // Passport will handle the redirect to Twitter
+    // Guard sets cookie and handles the redirect to Twitter
   }
 
   @Get('/x/callback')
@@ -134,7 +111,7 @@ export class AuthController {
     const frontendUrl = this.configService.get<string>('frontend_url');
 
     try {
-      const accessToken = req.cookies?.['accessToken'];
+      const accessToken = req.cookies?.['oauth_token'];
 
       if (!accessToken) {
         throw new UnauthorizedException(
@@ -162,12 +139,19 @@ export class AuthController {
 
       await this.authService.linkTwitterAccount(userId, twitterData);
 
+      // Clear cookie after successful linking
+      res.clearCookie('oauth_token');
+
       // Redirect to frontend on success
       res.redirect(frontendUrl);
     } catch (error) {
+      // Clear cookie on error
+      res.clearCookie('oauth_token');
+
       // Redirect to frontend with error parameter
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error during Twitter callback:', errorMessage);
       res.redirect(`${frontendUrl}?error=${encodeURIComponent(errorMessage)}`);
     }
   }

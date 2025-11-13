@@ -101,7 +101,7 @@ export class MetaplexCNftService {
   async createNFTMetadata(walletAddress: string): Promise<string> {
     const nftMetadata: NFTMetadata = {
       name: 'Early Contributor: Season 1',
-      description: `Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n• Boosted APY in the season 1 LP Mining Campaign\n• Priority access to launch updates and community events\n\nHolder: ${walletAddress}`,
+      description: `Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n Boosted APY in the season 1 LP Mining Campaign\n Priority access to launch updates and community events\n\nHolder: ${walletAddress}`,
       image: this.pinataImageUrl,
       external_url: 'https://www.backyard.finance/',
       properties: {

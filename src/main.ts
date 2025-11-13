@@ -11,7 +11,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.FRONTEND_URL!,
+    credentials: true,
+  });
   app.use(cookieParser());
 
   // Configure session for OAuth state management
@@ -22,7 +25,7 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: configService.get<string>('node_env') === 'production',
+        secure: configService.get<string>('ENV') === 'prod',
         sameSite: 'lax', // Allow cookies to be sent with top-level navigation (OAuth redirects)
         maxAge: 10 * 60 * 1000, // 10 minutes
       },
