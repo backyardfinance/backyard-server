@@ -60,9 +60,7 @@ export class MetaplexCNftService {
         {
           type: 'PermanentFreezeDelegate',
           frozen: true,
-          authority: {
-            type: 'UpdateAuthority',
-          },
+          authority: { type: 'None' },
         },
       ],
     }).sendAndConfirm(this.umi);
