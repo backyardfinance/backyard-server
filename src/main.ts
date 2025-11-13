@@ -26,7 +26,7 @@ async function bootstrap() {
       cookie: {
         httpOnly: true,
         secure: configService.get<string>('ENV') === 'prod',
-        sameSite: 'none', // Allow cookies to be sent with top-level navigation (OAuth redirects)
+        sameSite: 'lax', // Allow cookies to be sent with top-level navigation (OAuth redirects)
         maxAge: 10 * 60 * 1000, // 10 minutes
       },
     }),

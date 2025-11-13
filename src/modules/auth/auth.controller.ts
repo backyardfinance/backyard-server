@@ -46,15 +46,15 @@ export class AuthController {
 
     //TODO: ref
     response.cookie('accessToken', accessToken, {
-      httpOnly: true,
+      // httpOnly: true,
       secure: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
     response.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
+      // httpOnly: true,
       secure: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
