@@ -11,6 +11,7 @@ export default () => ({
   jwt_secret: env.string('JWT_SECRET'),
   jwt_refresh_secret: env.string('JWT_REFRESH_SECRET'),
   session_secret: env.string('SESSION_SECRET'),
+  frontend_url: env.string('FRONTEND_URL'),
   resend: {
     api_key: env.string('RESEND_API_KEY'),
     from_email: env.string('RESEND_FROM_EMAIL', null),

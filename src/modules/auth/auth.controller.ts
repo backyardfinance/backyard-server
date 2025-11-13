@@ -8,10 +8,10 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { Request, Response } from 'express';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { UserXDto } from '../../dto';
 import { AuthService } from './auth.service';
 import { ClaimNonceResponseDto } from './dto/claim-nonce-response.dto';
 import { ClaimNonceDto } from './dto/claim-nonce.dto';
@@ -24,7 +24,10 @@ import { AuthResult } from './interfaces/auth.interface';
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('claim-nonce')
   @ApiOkResponse({ type: ClaimNonceResponseDto })
@@ -124,40 +127,48 @@ export class AuthController {
 
   @Get('/x/callback')
   @UseGuards(TwitterAuthGuard)
-  @ApiOkResponse({ type: UserXDto })
-  async callback(@Req() req: Request & { user: any }) {
-    const accessToken = req.cookies?.['accessToken'];
+  async callback(
+    @Req() req: Request & { user: any },
+    @Res() res: Response,
+  ): Promise<void> {
+    const frontendUrl = this.configService.get<string>('frontend_url');
 
-    if (!accessToken) {
-      throw new UnauthorizedException(
-        'User must be authenticated with wallet before linking Twitter',
-      );
+    try {
+      const accessToken = req.cookies?.['accessToken'];
+
+      if (!accessToken) {
+        throw new UnauthorizedException(
+          'User must be authenticated with wallet before linking Twitter',
+        );
+      }
+
+      const jwtPayload = this.authService.verifyAccessToken(accessToken);
+      if (!jwtPayload || !jwtPayload.userId) {
+        throw new UnauthorizedException('Invalid access token');
+      }
+      // Get userId from OAuth state (extracted by TwitterStrategy)
+      const userId = jwtPayload.userId;
+      if (!userId) {
+        throw new UnauthorizedException(
+          'Invalid OAuth state. Please start the Twitter linking process again.',
+        );
+      }
+
+      // Link Twitter account to user
+      const twitterData = {
+        xId: req.user.xId,
+        xUsername: req.user.xUsername,
+      };
+
+      await this.authService.linkTwitterAccount(userId, twitterData);
+
+      // Redirect to frontend on success
+      res.redirect(frontendUrl);
+    } catch (error) {
+      // Redirect to frontend with error parameter
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      res.redirect(`${frontendUrl}?error=${encodeURIComponent(errorMessage)}`);
     }
-
-    const jwtPayload = this.authService.verifyAccessToken(accessToken);
-    if (!jwtPayload || !jwtPayload.userId) {
-      throw new UnauthorizedException('Invalid access token');
-    }
-    // Get userId from OAuth state (extracted by TwitterStrategy)
-    const userId = jwtPayload.userId;
-    if (!userId) {
-      throw new UnauthorizedException(
-        'Invalid OAuth state. Please start the Twitter linking process again.',
-      );
-    }
-
-    // Link Twitter account to user
-    const twitterData = {
-      xId: req.user.xId,
-      xUsername: req.user.xUsername,
-    };
-
-    const result = await this.authService.linkTwitterAccount(
-      userId,
-      twitterData,
-    );
-
-    return result;
-    // TODO: redirect to frontend
   }
 }
