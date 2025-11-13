@@ -15,11 +15,11 @@ export class AdminController {
     private readonly metaplexCNftService: MetaplexCNftService,
   ) {}
 
-  // @Post('initialize-whitelist')
-  // async initializeWhitelist() {
-  //   await this.metaplexCNftService.createSoulboundCollection();
-  //   await this.metaplexCNftService.createTree();
-  // }
+  @Post('initialize-whitelist')
+  async initializeWhitelist() {
+    await this.metaplexCNftService.createSoulboundCollection();
+    await this.metaplexCNftService.createTree();
+  }
 
   /*@Post('create-vault')
   async createVault(@Body() dto: CreateVaultDto) {
