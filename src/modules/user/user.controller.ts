@@ -22,11 +22,16 @@ import {
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { MetaplexCNftService } from '../metaplex/metaplex-cnft';
+import { publicKey } from '@metaplex-foundation/umi';
 
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly metaplexCNftService: MetaplexCNftService,
+  ) {}
 
   // @Post('siwe/nonce')
   // async nonce(@Query('address') address: string) {
@@ -91,5 +96,14 @@ export class UserController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.userService.updateUserByWallet(wallet, dto);
+  }
+
+  @Post('prepare-mint')
+  @UseGuards(JwtAuthGuard)
+  async prepareMintTransaction(
+    @Req() req: Request & { user: { wallet: string } },
+  ) {
+    const wallet = req.user.wallet;
+    return this.metaplexCNftService.prepareMintTransaction(publicKey(wallet));
   }
 }

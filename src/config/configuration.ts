@@ -27,4 +27,7 @@ export default () => ({
     target_username: env.string('TWITTER_TARGET_USERNAME'),
     target_tweet_id: env.string('TWITTER_TARGET_TWEET_ID'),
   },
+  is_whitelist_active: env.string('IS_WHITELIST_ACTIVE'),
+  collection: env.string('COLLECTION'),
+  merkle_tree: env.string('MERKLE_TREE'),
 });

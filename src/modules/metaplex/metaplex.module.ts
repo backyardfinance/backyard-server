@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MetaplexService } from './metaplex.service';
-import { MetaplexCNft } from './metaplex-cnft';
+import { MetaplexCNftService } from './metaplex-cnft';
 
 @Module({
   controllers: [],
-  providers: [MetaplexService, MetaplexCNft],
-  exports: [MetaplexService, MetaplexCNft],
+  providers: [MetaplexService, MetaplexCNftService],
+  exports: [MetaplexService, MetaplexCNftService],
 })
 export class MetaplexModule {}
