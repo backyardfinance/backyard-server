@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -97,9 +98,13 @@ export class AuthController {
 
   @Get('/x/login')
   @UseGuards(TwitterAuthGuard)
-  async login() {
-    // Guard handles JWT verification and state parameter
-    // Passport will handle the redirect to Twitter
+  async login(
+    @Query('token') token: string,
+    @Req() req: Request,
+  ) {
+    // Store access token in session for use in callback
+    req.session.accessToken = token;
+    // Guard handles the redirect to Twitter
   }
 
   @Get('/x/callback')
@@ -111,7 +116,7 @@ export class AuthController {
     const frontendUrl = this.configService.get<string>('frontend_url');
 
     try {
-      const accessToken = req.cookies?.['accessToken'];
+      const accessToken = req.session.accessToken;
 
       if (!accessToken) {
         throw new UnauthorizedException(
@@ -139,9 +144,15 @@ export class AuthController {
 
       await this.authService.linkTwitterAccount(userId, twitterData);
 
+      // Clear session token after successful linking
+      delete req.session.accessToken;
+
       // Redirect to frontend on success
       res.redirect(frontendUrl);
     } catch (error) {
+      // Clear session token on error
+      delete req.session.accessToken;
+
       // Redirect to frontend with error parameter
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
