@@ -58,7 +58,7 @@ export class MailService implements OnModuleInit {
       const fromName = this.configService.get<string>('resend.from_name');
 
       const response = await this.resend.emails.send({
-        from: `${fromName} <${fromEmail}>`,
+        from: fromEmail ? `${fromName} <${fromEmail}>` : undefined,
         to: options.to,
         subject: options.subject,
         template: {

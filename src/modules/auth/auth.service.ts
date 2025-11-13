@@ -3,7 +3,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { UserXDto } from '../../dto';
 import { randomBytes } from 'crypto';
@@ -16,6 +15,7 @@ import { TokenPayload } from './interfaces/token-payload.interface';
 import { ClaimNonceDto } from './dto/claim-nonce.dto';
 import { ClaimNonceResponseDto } from './dto/claim-nonce-response.dto';
 import { VerifySignatureDto } from './dto/verify-signature.dto';
+import { TestLoginDto } from './dto/test-login.dto';
 
 @Injectable()
 export class AuthService {
@@ -55,6 +55,35 @@ export class AuthService {
     const user = await this.userService.findOrCreate({ wallet });
     const userId = user.id;
 
+    const accessToken = this.generateAccessToken({
+      userId,
+      wallet,
+    });
+    const refreshToken = this.generateRefreshToken({
+      userId,
+      wallet,
+    });
+
+    return {
+      user: {
+        userId,
+        wallet,
+      },
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  // TEST ONLY: Create user and login without signature verification
+  // TODO: Remove this endpoint before deploying to production
+  async testLogin(dto: TestLoginDto): Promise<AuthResult> {
+    const { wallet } = dto;
+
+    // Find or create user with WhitelistParticipant
+    const user = await this.userService.findOrCreate({ wallet });
+    const userId = user.id;
+
+    // Generate tokens without signature verification
     const accessToken = this.generateAccessToken({
       userId,
       wallet,
@@ -119,39 +148,22 @@ export class AuthService {
     return `${baseUrl}?${params.toString()}`;
   }
 
-  async handleCallback(code: string) {
-    const tokenUrl = 'https://api.x.com/2/oauth2/token';
-    const redirectUri = this.config.get<string>('twitter.redirect_uri');
-    const clientId = this.config.get<string>('twitter.client_id');
-    const clientSecret = this.config.get<string>('twitter.client_secret');
+  async linkTwitterAccount(
+    userId: string,
+    twitterData: { xId: string; xUsername: string },
+  ) {
+    const { xId, xUsername } = twitterData;
 
-    const body = new URLSearchParams({
-      code,
-      grant_type: 'authorization_code',
-      redirect_uri: redirectUri,
-      code_verifier: 'challenge', // must match your challenge
-      client_id: clientId,
-    });
-
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization:
-        'Basic ' +
-        Buffer.from(`${clientId}:${clientSecret}`).toString('base64'), // confidential client
-    };
-
-    const tokenResponse = await axios.post(tokenUrl, body.toString(), {
-      headers,
-    });
-    const accessToken = tokenResponse.data.access_token;
-
-    const userResponse = await axios.get('https://api.x.com/2/users/me', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    // Update user with Twitter information
+    const updatedUser = await this.userService.linkTwitterToUser(
+      userId,
+      xId,
+      xUsername,
+    );
 
     return {
-      xId: userResponse.data.data.id,
-      xUserName: userResponse.data.data.username,
+      xId: updatedUser.xId,
+      xUserName: updatedUser.xUsername,
     } as UserXDto;
   }
 
@@ -210,7 +222,7 @@ export class AuthService {
     });
   }
 
-  private verifyAccessToken(token: string): TokenPayload | null {
+  verifyAccessToken(token: string): TokenPayload | null {
     try {
       return this.jwtService.verify<TokenPayload>(token, {
         secret: this.configService.get<string>('JWT_SECRET'),

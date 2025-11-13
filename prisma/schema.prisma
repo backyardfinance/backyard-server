@@ -20,14 +20,18 @@ enum VaultPlatform {
 }
 
 model User {
-  id         String     @id @default(uuid())
-  email      String?    @unique
-  wallet     String     @unique
-  strategies Strategy[]
+  id              String     @id @default(uuid())
+  email           String?    @unique
+  wallet          String     @unique
+  xId             String?    @unique
+  xUsername       String?
+  isEmailVerified Boolean    @default(false)
+  strategies      Strategy[]
 
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @default(now()) @updatedAt
-  VerificationCode VerificationCode[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @default(now()) @updatedAt
+  VerificationCode     VerificationCode[]
+  WhitelistParticipant WhitelistParticipant?
 }
 
 model VerificationCode {
@@ -41,6 +45,25 @@ model VerificationCode {
 
   @@index([userId, consumedAt])
   @@index([userId, createdAt])
+}
+
+model WhitelistParticipant {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  wallet_connected Boolean  @default(false)
+  email_verified   Boolean  @default(false)
+  twitter_linked   Boolean  @default(false)
+  twitter_followed Boolean  @default(false)
+  post_retweeted   Boolean  @default(false)
+  nft_tx_signature String?
+  nft_leaf_index   Int?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([userId])
 }
 
 model Vault {

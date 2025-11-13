@@ -5,10 +5,12 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { Request } from 'express';
 import {
-  CheckFollowDto,
-  CheckRetweetDto,
   CreateUserDto,
   FollowStatusResponse,
   RetweetStatusResponse,
@@ -19,6 +21,7 @@ import {
 } from '../../dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -47,27 +50,39 @@ export class UserController {
   }
 
   @Post('send-email')
-  public async sendEmail(@Body() body: SendEmailDto) {
-    return this.userService.sendEmail(body);
+  @UseGuards(JwtAuthGuard)
+  public async sendEmail(
+    @Body() body: SendEmailDto,
+    @Req() req: Request & { user: { userId: string } },
+  ) {
+    const userId = req.user.userId;
+    return this.userService.sendEmail(userId, body);
   }
 
   @Post('verify-email-code')
-  async verify(@Body() dto: VerifyEmailDto) {
-    return this.userService.verifyEmail(dto);
+  @UseGuards(JwtAuthGuard)
+  async verify(
+    @Body() dto: VerifyEmailDto,
+    @Req() req: Request & { user: { userId: string } },
+  ) {
+    const userId = req.user.userId;
+    return this.userService.verifyEmail(userId, dto);
   }
 
   @Post('check-follow')
+  @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: FollowStatusResponse })
-  async checkFollow(@Body() dto: CheckFollowDto) {
-    // refactor to use username of logged-in twitter account
-    return await this.userService.checkUserFollow(dto.twitter_username);
+  async checkFollow(@Req() req: Request & { user: { userId: string } }) {
+    const userId = req.user.userId;
+    return await this.userService.checkUserFollow(userId);
   }
 
   @Post('check-retweet')
+  @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: RetweetStatusResponse })
-  async checkRetweet(@Body() dto: CheckRetweetDto) {
-    // refactor to use username of logged-in twitter account
-    return await this.userService.checkUserRetweet(dto.twitter_username);
+  async checkRetweet(@Req() req: Request & { user: { userId: string } }) {
+    const userId = req.user.userId;
+    return await this.userService.checkUserRetweet(userId);
   }
 
   @Patch(':walletAddress')

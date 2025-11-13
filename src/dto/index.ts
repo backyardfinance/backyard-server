@@ -337,11 +337,6 @@ export class SendEmailDto {
 }
 
 export class VerifyEmailDto {
-  @IsEmail()
-  @ApiProperty()
-  @Transform((email) => email.value.toLowerCase())
-  email: string;
-
   @IsString()
   @ApiProperty()
   code: string;
@@ -405,4 +400,122 @@ export class RetweetStatusResponse {
   @IsString()
   @ApiProperty()
   checked_at: string;
+}
+
+export class WhitelistTasksDto {
+  @IsBoolean()
+  @ApiProperty()
+  wallet_connected: boolean;
+
+  @IsBoolean()
+  @ApiProperty()
+  email_verified: boolean;
+
+  @IsBoolean()
+  @ApiProperty()
+  twitter_linked: boolean;
+
+  @IsBoolean()
+  @ApiProperty()
+  twitter_followed: boolean;
+
+  @IsBoolean()
+  @ApiProperty()
+  post_retweeted: boolean;
+}
+
+export class WhitelistProgressDto {
+  @IsNumber()
+  @ApiProperty()
+  completed: number;
+
+  @IsNumber()
+  @ApiProperty()
+  total: number;
+
+  @IsNumber()
+  @ApiProperty()
+  percentage: number;
+}
+
+export class WhitelistStatusDto {
+  @IsString()
+  @ApiProperty()
+  userId: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  wallet?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  twitterUsername?: string;
+
+  @IsObject()
+  @ApiProperty({ type: WhitelistTasksDto })
+  tasks: WhitelistTasksDto;
+
+  @IsObject()
+  @ApiProperty({ type: WhitelistProgressDto })
+  progress: WhitelistProgressDto;
+
+  @IsBoolean()
+  @ApiProperty()
+  isComplete: boolean;
+
+  @IsDate()
+  @ApiProperty()
+  createdAt: Date;
+
+  @IsDate()
+  @ApiProperty()
+  updatedAt: Date;
+}
+
+export class WhitelistParticipantDto {
+  @IsString()
+  @ApiProperty()
+  id: string;
+
+  @IsString()
+  @ApiProperty()
+  userId: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  wallet?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  twitterUsername?: string;
+
+  @IsObject()
+  @ApiProperty({ type: WhitelistTasksDto })
+  tasks: WhitelistTasksDto;
+
+  @IsBoolean()
+  @ApiProperty()
+  isComplete: boolean;
+
+  @IsDate()
+  @ApiProperty()
+  createdAt: Date;
+
+  @IsDate()
+  @ApiProperty()
+  updatedAt: Date;
 }

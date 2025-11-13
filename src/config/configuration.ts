@@ -2,6 +2,7 @@ import { env } from './env';
 
 export default () => ({
   env: env.string('ENV'),
+  node_env: env.string('NODE_ENV', 'development'),
   port: env.int('PORT', 4000),
   rpc_url: env.string('RPC_URL'),
   redis: env.string('REDIS'),
@@ -9,10 +10,11 @@ export default () => ({
   app_test_mode: env.bool('APP_TEST_MODE', false),
   jwt_secret: env.string('JWT_SECRET'),
   jwt_refresh_secret: env.string('JWT_REFRESH_SECRET'),
+  session_secret: env.string('SESSION_SECRET'),
   resend: {
     api_key: env.string('RESEND_API_KEY'),
-    from_email: env.string('RESEND_FROM_EMAIL', 'backyardfinance@gmail.com'),
-    from_name: env.string('RESEND_FROM_NAME', 'Backyard Finance'),
+    from_email: env.string('RESEND_FROM_EMAIL', null),
+    from_name: env.string('RESEND_FROM_NAME', null),
     verify_code_template_id: env.string('RESEND_VERIFY_CODE_TEMPLATE_ID'),
   },
   twitter: {
