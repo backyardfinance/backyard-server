@@ -15,6 +15,9 @@ import { KaminoModule } from './modules/kamino/kamino.module';
 import { WhitelistModule } from './modules/whitelist/whitelist.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
+import { TransactionModule } from './modules/transaction/transaction.module';
+import { QuoteModule } from './modules/quote/quote.module';
+import { CronModule } from './modules/cron/cron.module';
 
 @Module({
   imports: [
@@ -29,6 +32,7 @@ import KeyvRedis from '@keyv/redis';
         };
       },
     }),
+    // CronModule,
     PrismaModule,
     VaultModule,
     SolanaModule,
@@ -40,6 +44,8 @@ import KeyvRedis from '@keyv/redis';
     JupiterModule,
     KaminoModule,
     WhitelistModule,
+    TransactionModule,
+    QuoteModule,
   ],
   controllers: [AppController],
   providers: [],
