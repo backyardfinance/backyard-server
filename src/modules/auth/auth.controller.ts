@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -19,6 +18,7 @@ import { ClaimNonceDto } from './dto/claim-nonce.dto';
 import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { TwitterAuthGuard } from './guards/twitter-auth.guard';
+import { TwitterAuthWithTokenGuard } from './guards/twitter-auth-with-token.guard';
 import { TestLoginDto } from './dto/test-login.dto';
 
 @Controller('auth')
@@ -97,14 +97,9 @@ export class AuthController {
   }
 
   @Get('/x/login')
-  @UseGuards(TwitterAuthGuard)
-  async login(
-    @Query('token') token: string,
-    @Req() req: Request,
-  ) {
-    // Store access token in session for use in callback
-    req.session.accessToken = token;
-    // Guard handles the redirect to Twitter
+  @UseGuards(TwitterAuthWithTokenGuard)
+  async login() {
+    // Guard sets cookie and handles the redirect to Twitter
   }
 
   @Get('/x/callback')
@@ -116,7 +111,7 @@ export class AuthController {
     const frontendUrl = this.configService.get<string>('frontend_url');
 
     try {
-      const accessToken = req.session.accessToken;
+      const accessToken = req.cookies?.['oauth_token'];
 
       if (!accessToken) {
         throw new UnauthorizedException(
@@ -144,18 +139,19 @@ export class AuthController {
 
       await this.authService.linkTwitterAccount(userId, twitterData);
 
-      // Clear session token after successful linking
-      delete req.session.accessToken;
+      // Clear cookie after successful linking
+      res.clearCookie('oauth_token');
 
       // Redirect to frontend on success
       res.redirect(frontendUrl);
     } catch (error) {
-      // Clear session token on error
-      delete req.session.accessToken;
+      // Clear cookie on error
+      res.clearCookie('oauth_token');
 
       // Redirect to frontend with error parameter
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error during Twitter callback:', errorMessage);
       res.redirect(`${frontendUrl}?error=${encodeURIComponent(errorMessage)}`);
     }
   }

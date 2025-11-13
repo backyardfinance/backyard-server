@@ -21,7 +21,6 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
       state: 'state',
       clientType: 'confidential',
       authorizationURL: 'https://x.com/i/oauth2/authorize',
-      // tokenURL: 'https://api.x.com/2/oauth2/token',
     });
   }
 
