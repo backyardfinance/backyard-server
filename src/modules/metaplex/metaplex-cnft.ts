@@ -15,7 +15,7 @@ import {
   Umi,
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Connection } from '@solana/web3.js';
 import { PinataSDK } from 'pinata';
@@ -80,7 +80,7 @@ export class MetaplexCNftService {
     const collectionMetadata: NFTMetadata = {
       name: 'Backyard: Early Contributor',
       description:
-        'Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n• Early contributor NFT badge\n• Boosted APY in the season 1 LP Mining Campaign\n• Priority access to launch updates and community events',
+        'Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n Boosted APY in the season 1 LP Mining Campaign\n Priority access to launch updates and community events',
       image: this.pinataImageUrl,
       external_url: 'https://www.backyard.finance/',
       properties: {
@@ -100,10 +100,10 @@ export class MetaplexCNftService {
 
   async createNFTMetadata(walletAddress: string): Promise<string> {
     const nftMetadata: NFTMetadata = {
-      name: 'Whitelist Pass',
-      description: `Whitelist access pass for ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`,
+      name: 'Early Contributor: Season 1',
+      description: `Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n• Boosted APY in the season 1 LP Mining Campaign\n• Priority access to launch updates and community events\n\nHolder: ${walletAddress}`,
       image: this.pinataImageUrl,
-      external_url: 'https://yourproject.com',
+      external_url: 'https://www.backyard.finance/',
       properties: {
         files: [
           {
@@ -114,7 +114,6 @@ export class MetaplexCNftService {
         category: 'image',
       },
     };
-
     const metadataUri = await this.uploadMetadataToPinata(nftMetadata);
 
     return metadataUri;
@@ -165,6 +164,8 @@ export class MetaplexCNftService {
   }
 
   async prepareMintTransaction(user: PublicKey) {
+    const hasNft = await this.checkUserHasNFT(user);
+    if (hasNft) throw new BadRequestException('User already claimed the NFT');
     const metadataUri = await this.createNFTMetadata(user.toString());
 
     const mintBuilder = mintV2(this.umi, {
@@ -173,7 +174,7 @@ export class MetaplexCNftService {
       merkleTree: this.merkleTreeAddress,
       coreCollection: this.collectionAddress,
       metadata: {
-        name: `Whitelist Pass`,
+        name: `Early Contributor: Season 1`,
         uri: metadataUri,
         sellerFeeBasisPoints: 0,
         collection: some(this.collectionAddress),
@@ -192,5 +193,28 @@ export class MetaplexCNftService {
       transaction: base64Tx,
       metadataUri,
     };
+  }
+
+  async checkUserHasNFT(userWalletAddress: string) {
+    try {
+      const userPublicKey = publicKey(userWalletAddress);
+
+      const assets = await this.umi.rpc.getAssetsByOwner({
+        owner: userPublicKey,
+      });
+
+      const hasNFT = assets.items.some((asset) =>
+        asset.grouping?.some(
+          (group) =>
+            group.group_key === 'collection' &&
+            group.group_value === this.collectionAddress.toString(),
+        ),
+      );
+
+      return hasNFT;
+    } catch (error) {
+      console.error('Error checking NFT ownership:', error);
+      return false;
+    }
   }
 }
