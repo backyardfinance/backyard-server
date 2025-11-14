@@ -9,6 +9,7 @@ import {
   UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { Request } from 'express';
 import {
   CreateUserDto,
@@ -19,7 +20,7 @@ import {
   UsertInfoResponse,
   VerifyEmailDto,
 } from '../../dto';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MetaplexCNftService } from '../metaplex/metaplex-cnft';
@@ -57,6 +58,8 @@ export class UserController {
 
   @Post('send-email')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @Throttle({ medium: { limit: 5, ttl: 600000 } })
   public async sendEmail(
     @Body() body: SendEmailDto,
     @Req() req: Request & { user: { userId: string } },
@@ -67,6 +70,8 @@ export class UserController {
 
   @Post('verify-email-code')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @Throttle({ long: { limit: 20, ttl: 1800000 } })
   async verify(
     @Body() dto: VerifyEmailDto,
     @Req() req: Request & { user: { userId: string } },
@@ -77,6 +82,8 @@ export class UserController {
 
   @Post('check-follow')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @Throttle({ short: { limit: 5, ttl: 300000 } })
   @ApiOkResponse({ type: FollowStatusResponse })
   async checkFollow(@Req() req: Request & { user: { userId: string } }) {
     const userId = req.user.userId;
@@ -85,6 +92,8 @@ export class UserController {
 
   @Post('check-retweet')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @Throttle({ short: { limit: 5, ttl: 300000 } })
   @ApiOkResponse({ type: RetweetStatusResponse })
   async checkRetweet(@Req() req: Request & { user: { userId: string } }) {
     const userId = req.user.userId;
@@ -101,6 +110,8 @@ export class UserController {
 
   @Post('prepare-mint/:walletAddress')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @SkipThrottle()
   @ApiOkResponse({ type: MintTransactionResult })
   async prepareMintTransaction(
     @Param('walletAddress') wallet: string, // @Req() req: Request & { user: { wallet: string } },

@@ -1,5 +1,6 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WhitelistService } from './whitelist.service';
@@ -12,6 +13,8 @@ export class WhitelistController {
 
   @Get('status')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
+  @SkipThrottle()
   @ApiOkResponse({
     type: WhitelistStatusDto,
     description: 'Get authenticated user whitelist status',

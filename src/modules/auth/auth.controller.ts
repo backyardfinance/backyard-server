@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 
 import { Request, Response } from 'express';
@@ -97,18 +98,22 @@ export class AuthController {
 
   @Get('/x/login')
   @UseGuards(TwitterAuthGuard)
+  @Throttle({ short: { limit: 5, ttl: 300000 } })
   async login() {
     // Guard sets cookie and handles the redirect to Twitter
   }
 
   @Get('/x/callback')
   @UseGuards(TwitterAuthGuard)
+  @SkipThrottle()
   async callback(
     @Req() req: Request & { user: any },
     @Res() res: Response,
   ): Promise<void> {
     const frontendUrl = this.configService.get<string>('frontend_url');
-    const twitterAuthRedirectUrl = this.configService.get<string>('twitter.auth_redirect_url');
+    const twitterAuthRedirectUrl = this.configService.get<string>(
+      'twitter.auth_redirect_url',
+    );
 
     try {
       const accessToken = req.cookies?.['oauth_token'];

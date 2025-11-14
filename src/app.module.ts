@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from './config/config.module';
 import configuration from './config/configuration';
@@ -19,6 +20,9 @@ import { TransactionModule } from './modules/transaction/transaction.module';
 import { QuoteModule } from './modules/quote/quote.module';
 import { CronModule } from './modules/cron/cron.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import Redis from 'ioredis';
 
 @Module({
   imports: [
@@ -32,6 +36,19 @@ import { AdminModule } from './modules/admin/admin.module';
           stores: [redis],
         };
       },
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          { name: 'short', ttl: 300000, limit: 5 }, // 5 minutes
+          { name: 'medium', ttl: 600000, limit: 5 }, // 10 minutes
+          { name: 'long', ttl: 1800000, limit: 20 }, // 30 minutes
+        ],
+        storage: new ThrottlerStorageRedisService(
+          new Redis(config.get<string>('REDIS')),
+        ),
+      }),
     }),
     // CronModule,
     AdminModule,
@@ -50,6 +67,11 @@ import { AdminModule } from './modules/admin/admin.module';
     QuoteModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
