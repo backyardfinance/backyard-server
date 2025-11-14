@@ -99,13 +99,13 @@ export class UserController {
     return this.userService.updateUserByWallet(wallet, dto);
   }
 
-  @Post('prepare-mint')
+  @Post('prepare-mint/:walletAddress')
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: MintTransactionResult })
   async prepareMintTransaction(
-    @Req() req: Request & { user: { wallet: string } },
+    @Param('walletAddress') wallet: string, // @Req() req: Request & { user: { wallet: string } },
   ): Promise<MintTransactionResult> {
-    const wallet = req.user.wallet;
+    // const wallet = req.user.wallet;
     return this.metaplexCNftService.prepareMintTransaction(publicKey(wallet));
   }
 
