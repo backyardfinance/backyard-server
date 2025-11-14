@@ -35,24 +35,26 @@ async function bootstrap() {
   app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost)));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  const config = new DocumentBuilder()
-    .setTitle('BACKYARD FINANCE API')
-    .setDescription('BACKYARD FINANCE SERVER API')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        in: 'header',
-      },
-      'JWT',
-    )
-    .build();
+  if (configService.get<string>('node_env') !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('BACKYARD FINANCE API')
+      .setDescription('BACKYARD FINANCE SERVER API')
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          in: 'header',
+        },
+        'JWT',
+      )
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-  app.getHttpAdapter().getInstance().locals.swaggerDocument = document;
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+    app.getHttpAdapter().getInstance().locals.swaggerDocument = document;
+  }
 
   await app.listen(configService.getOrThrow<number>('port'));
 }
