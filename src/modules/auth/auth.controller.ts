@@ -110,7 +110,14 @@ export class AuthController {
     const frontendUrl = this.configService.get<string>('frontend_url');
 
     try {
+      console.log('[TwitterCallback] Cookies received:', req.cookies);
+      console.log('[TwitterCallback] User from passport:', req.user);
+
       const accessToken = req.cookies?.['oauth_token'];
+      console.log(
+        '[TwitterCallback] oauth_token cookie:',
+        accessToken ? 'present' : 'missing',
+      );
 
       if (!accessToken) {
         throw new UnauthorizedException(
@@ -119,6 +126,8 @@ export class AuthController {
       }
 
       const jwtPayload = this.authService.verifyAccessToken(accessToken);
+      console.log('[TwitterCallback] JWT payload:', jwtPayload);
+
       if (!jwtPayload || !jwtPayload.userId) {
         throw new UnauthorizedException('Invalid access token');
       }
@@ -136,7 +145,14 @@ export class AuthController {
         xUsername: req.user.xUsername,
       };
 
+      console.log(
+        '[TwitterCallback] Linking Twitter account:',
+        twitterData,
+        'to userId:',
+        userId,
+      );
       await this.authService.linkTwitterAccount(userId, twitterData);
+      console.log('[TwitterCallback] Twitter account linked successfully');
 
       // Clear cookie after successful linking
       res.clearCookie('oauth_token');

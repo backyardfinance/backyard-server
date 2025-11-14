@@ -3,10 +3,7 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WhitelistService } from './whitelist.service';
-import {
-  WhitelistStatusDto,
-  WhitelistParticipantDto,
-} from '../../dto';
+import { WhitelistStatusDto, WhitelistParticipantDto } from '../../dto';
 
 @Controller('whitelist')
 @ApiTags('whitelist')

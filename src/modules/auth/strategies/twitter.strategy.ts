@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from '@superfaceai/passport-twitter-oauth2';
 import { ConfigService } from '@nestjs/config';
 
-export interface TwitterProfile { 
+export interface TwitterProfile {
   id: string;
   username: string;
   displayName: string;
@@ -27,10 +27,17 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
   }
 
   async validate(
+    req: any,
     accessToken: string,
     refreshToken: string,
     profile: TwitterProfile,
   ) {
+    console.log(
+      '[TwitterStrategy] Validate called for user:',
+      profile.username,
+    );
+    console.log('[TwitterStrategy] Request cookies:', req.cookies);
+
     return {
       xId: profile.id,
       xUsername: profile.username,
