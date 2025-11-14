@@ -21,6 +21,11 @@ export class AdminController {
   //   await this.metaplexCNftService.createTree();
   // }
 
+  // @Post('initialize-nft-metadata')
+  // async initializeWhitelist() {
+  //   return this.metaplexCNftService.createNFTMetadata();
+  // }
+
   /*@Post('create-vault')
   async createVault(@Body() dto: CreateVaultDto) {
     const ourLpMint = Keypair.generate();

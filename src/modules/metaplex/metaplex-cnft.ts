@@ -35,6 +35,7 @@ export class MetaplexCNftService {
   private merkleTreeAddress?: PublicKey;
   private collectionAddress?: PublicKey;
   private collectionMetadataUri?: string;
+  private nftMetadataUri?: string;
 
   private readonly COLLECTION_CONFIG: CollectionConfig = {
     name: 'Backyard: Early Contributor',
@@ -94,6 +95,7 @@ export class MetaplexCNftService {
         'COLLECTION_METADATA_URI',
       );
     }
+    this.nftMetadataUri = this.config.get<string>('NFT_METADATA_URI');
   }
 
   private createMetadata(
@@ -125,12 +127,10 @@ export class MetaplexCNftService {
     return this.uploadMetadataToPinata(metadata);
   }
 
-  async createNFTMetadata(walletAddress: string): Promise<string> {
-    const description = `${this.COLLECTION_CONFIG.description}\n\nHolder: ${walletAddress}`;
-
+  async createNFTMetadata(): Promise<string> {
     const metadata = this.createMetadata(
       'Early Contributor: Season 1',
-      description,
+      this.COLLECTION_CONFIG.description,
       this.pinataImageUrl,
       this.COLLECTION_CONFIG.externalUrl,
     );
@@ -209,8 +209,6 @@ export class MetaplexCNftService {
       throw new BadRequestException('User has already claimed the NFT');
     }
 
-    const metadataUri = await this.createNFTMetadata(user.toString());
-
     try {
       const mintBuilder = mintV2(this.umi, {
         leafOwner: user,
@@ -219,7 +217,7 @@ export class MetaplexCNftService {
         coreCollection: this.collectionAddress!,
         metadata: {
           name: 'Early Contributor: Season 1',
-          uri: metadataUri,
+          uri: this.nftMetadataUri!,
           sellerFeeBasisPoints: 0,
           collection: some(this.collectionAddress!),
           creators: [],
@@ -235,7 +233,6 @@ export class MetaplexCNftService {
 
       return {
         transaction: base64Tx,
-        metadataUri,
       };
     } catch (error) {
       this.logger.error('Failed to prepare mint transaction', error);
