@@ -108,6 +108,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<void> {
     const frontendUrl = this.configService.get<string>('frontend_url');
+    const twitterAuthRedirectUrl = this.configService.get<string>('twitter.auth_redirect_url');
 
     try {
       console.log('[TwitterCallback] Cookies received:', req.cookies);
@@ -158,7 +159,7 @@ export class AuthController {
       res.clearCookie('oauth_token');
 
       // Redirect to frontend on success
-      res.redirect(frontendUrl);
+      res.redirect(`${frontendUrl}${twitterAuthRedirectUrl}`);
     } catch (error) {
       // Clear cookie on error
       res.clearCookie('oauth_token');
@@ -167,7 +168,9 @@ export class AuthController {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
       console.error('Error during Twitter callback:', errorMessage);
-      res.redirect(`${frontendUrl}?error=${encodeURIComponent(errorMessage)}`);
+      res.redirect(
+        `${frontendUrl}${twitterAuthRedirectUrl}?error=${encodeURIComponent(errorMessage)}`,
+      );
     }
   }
 }

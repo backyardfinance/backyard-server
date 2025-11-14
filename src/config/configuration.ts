@@ -26,6 +26,7 @@ export default () => ({
     scraper_token: env.string('TWITTER_SCRAPER_TOKEN'),
     target_username: env.string('TWITTER_TARGET_USERNAME'),
     target_tweet_id: env.string('TWITTER_TARGET_TWEET_ID'),
+    auth_redirect_url: env.string('TWITTER_AUTH_REDIRECT_URL'),
   },
   is_whitelist_active: env.string('IS_WHITELIST_ACTIVE'),
   collection: env.string('COLLECTION'),
