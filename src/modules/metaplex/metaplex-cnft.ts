@@ -15,206 +15,264 @@ import {
   Umi,
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Connection } from '@solana/web3.js';
 import { PinataSDK } from 'pinata';
-
-interface NFTMetadata {
-  name: string;
-  description: string;
-  image: string;
-  external_url?: string;
-  properties: {
-    files: Array<{
-      uri: string;
-      type: string;
-    }>;
-    category: string;
-  };
-}
+import { NFTMetadata } from './interfaces/nft-metadata.interface';
+import { CollectionConfig } from './interfaces/collection-config.interface';
+import { MintTransactionResult } from './interfaces/mint-transaction-result.interface';
 
 @Injectable()
 export class MetaplexCNftService {
+  private readonly logger = new Logger(MetaplexCNftService.name);
   private readonly connection: Connection;
   private readonly umi: Umi;
-  private merkleTreeAddress: PublicKey;
-  private collectionAddress: PublicKey;
-  private readonly pinataJWT: string;
-  private readonly pinataImageUrl: string;
-  private collectionMetadataUri: string;
   private readonly pinata: PinataSDK;
+  private readonly pinataImageUrl: string;
+  private readonly pinataGateway: string;
+
+  private merkleTreeAddress?: PublicKey;
+  private collectionAddress?: PublicKey;
+  private collectionMetadataUri?: string;
+
+  private readonly COLLECTION_CONFIG: CollectionConfig = {
+    name: 'Backyard: Early Contributor',
+    description:
+      'Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n Boosted APY in the season 1 LP Mining Campaign\n Priority access to launch updates and community events',
+    externalUrl: 'https://www.backyard.finance/',
+  };
+
+  private readonly MERKLE_TREE_CONFIG = {
+    maxBufferSize: 64,
+    maxDepth: 14,
+  };
 
   constructor(private readonly config: ConfigService) {
-    const rpcUrl =
-      process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+    const rpcUrl = this.config.get<string>(
+      'RPC_URL',
+      'https://api.devnet.solana.com',
+    );
+
     this.connection = new Connection(rpcUrl, 'confirmed');
+
     this.umi = createUmi(this.connection)
       .use(mplBubblegum())
       .use(mplTokenMetadata());
 
+    const privateKey = this.config.getOrThrow<string>(
+      'MASTER_WALLET_PRIVATE_KEY',
+    );
     const keypair = this.umi.eddsa.createKeypairFromSecretKey(
-      Uint8Array.from(JSON.parse(process.env.MASTER_WALLET_PRIVATE_KEY!)),
+      Uint8Array.from(JSON.parse(privateKey)),
     );
     this.umi.use(keypairIdentity(keypair));
 
-    const pinataJwt = process.env.PINATA_JWT!;
-    this.pinataImageUrl = process.env.PINATA_IMAGE_URL!;
-    const pinataGateway = process.env.PINATA_GATEWAY!;
-
-    if (config.get<string>('IS_WHITELIST_ACTIVE') === 'true') {
-      this.merkleTreeAddress = publicKey(config.get<string>('MERKLE_TREE'));
-      this.collectionAddress = publicKey(config.get<string>('COLLECTION'));
-      this.collectionMetadataUri = config.get<string>(
-        'COLLECTION_METADATA_URI',
-      );
-    }
+    const pinataJwt = this.config.getOrThrow<string>('PINATA_JWT');
+    const pinataImageUrl = this.config.getOrThrow<string>('PINATA_IMAGE_URL');
+    const pinataGateway = this.config.getOrThrow<string>('PINATA_GATEWAY');
 
     this.pinata = new PinataSDK({
       pinataJwt,
       pinataGateway,
     });
+
+    this.pinataImageUrl = pinataImageUrl;
+    this.pinataGateway = pinataGateway;
+
+    const isWhitelistActive =
+      this.config.get<string>('IS_WHITELIST_ACTIVE') === 'true';
+
+    if (isWhitelistActive) {
+      this.merkleTreeAddress = publicKey(
+        this.config.getOrThrow<string>('MERKLE_TREE'),
+      );
+      this.collectionAddress = publicKey(
+        this.config.getOrThrow<string>('COLLECTION'),
+      );
+      this.collectionMetadataUri = this.config.getOrThrow<string>(
+        'COLLECTION_METADATA_URI',
+      );
+    }
+  }
+
+  private createMetadata(
+    name: string,
+    description: string,
+    image: string,
+    externalUrl: string,
+  ): NFTMetadata {
+    return {
+      name,
+      description,
+      image,
+      external_url: externalUrl,
+      properties: {
+        files: [{ uri: image, type: 'image/png' }],
+        category: 'image',
+      },
+    };
   }
 
   async createCollectionMetadata(): Promise<string> {
-    const collectionMetadata: NFTMetadata = {
-      name: 'Backyard: Early Contributor',
-      description:
-        'Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n Boosted APY in the season 1 LP Mining Campaign\n Priority access to launch updates and community events',
-      image: this.pinataImageUrl,
-      external_url: 'https://www.backyard.finance/',
-      properties: {
-        files: [
-          {
-            uri: this.pinataImageUrl,
-            type: 'image/png',
-          },
-        ],
-        category: 'image',
-      },
-    };
+    const metadata = this.createMetadata(
+      this.COLLECTION_CONFIG.name,
+      this.COLLECTION_CONFIG.description,
+      this.pinataImageUrl,
+      this.COLLECTION_CONFIG.externalUrl,
+    );
 
-    const metadataUri = await this.uploadMetadataToPinata(collectionMetadata);
-    return metadataUri;
+    return this.uploadMetadataToPinata(metadata);
   }
 
   async createNFTMetadata(walletAddress: string): Promise<string> {
-    const nftMetadata: NFTMetadata = {
-      name: 'Early Contributor: Season 1',
-      description: `Claim your Early Contributor NFT to get boosted APY in LP Mining Campaign SEASON 1:\n Early contributor NFT badge\n Boosted APY in the season 1 LP Mining Campaign\n Priority access to launch updates and community events\n\nHolder: ${walletAddress}`,
-      image: this.pinataImageUrl,
-      external_url: 'https://www.backyard.finance/',
-      properties: {
-        files: [
-          {
-            uri: this.pinataImageUrl,
-            type: 'image/png',
-          },
-        ],
-        category: 'image',
-      },
-    };
-    const metadataUri = await this.uploadMetadataToPinata(nftMetadata);
+    const description = `${this.COLLECTION_CONFIG.description}\n\nHolder: ${walletAddress}`;
 
-    return metadataUri;
+    const metadata = this.createMetadata(
+      'Early Contributor: Season 1',
+      description,
+      this.pinataImageUrl,
+      this.COLLECTION_CONFIG.externalUrl,
+    );
+
+    return this.uploadMetadataToPinata(metadata);
   }
 
   private async uploadMetadataToPinata(metadata: NFTMetadata): Promise<string> {
-    const upload = await this.pinata.upload.public.json(metadata);
-    const metadataUri = `https://${process.env.PINATA_GATEWAY}/ipfs/${upload.cid}`;
-    return metadataUri;
+    try {
+      const upload = await this.pinata.upload.public.json(metadata);
+      return `https://${this.pinataGateway}/ipfs/${upload.cid}`;
+    } catch (error) {
+      this.logger.error('Failed to upload metadata to Pinata', error);
+      throw new Error('Failed to upload metadata to IPFS');
+    }
   }
 
-  async createSoulboundCollection() {
-    this.collectionMetadataUri = await this.createCollectionMetadata();
+  async createSoulboundCollection(): Promise<void> {
+    try {
+      this.collectionMetadataUri = await this.createCollectionMetadata();
+      const collectionSigner = generateSigner(this.umi);
 
-    const collectionSigner = generateSigner(this.umi);
-    await createCollection(this.umi, {
-      collection: collectionSigner,
-      name: 'Backyard: Early Contributor',
-      uri: this.collectionMetadataUri,
-      plugins: [
-        { type: 'BubblegumV2' },
-        {
-          type: 'PermanentFreezeDelegate',
-          frozen: true,
-          authority: { type: 'None' },
-        },
-      ],
-    }).sendAndConfirm(this.umi);
+      await createCollection(this.umi, {
+        collection: collectionSigner,
+        name: this.COLLECTION_CONFIG.name,
+        uri: this.collectionMetadataUri,
+        plugins: [
+          { type: 'BubblegumV2' },
+          {
+            type: 'PermanentFreezeDelegate',
+            frozen: true,
+            authority: { type: 'None' },
+          },
+        ],
+      }).sendAndConfirm(this.umi);
 
-    this.collectionAddress = collectionSigner.publicKey;
-    console.log('Collection created:', this.collectionAddress);
-    console.log('Collection metadata URI:', this.collectionMetadataUri);
+      this.collectionAddress = collectionSigner.publicKey;
+
+      this.logger.log(`Collection created: ${this.collectionAddress}`);
+      this.logger.log(`Collection metadata URI: ${this.collectionMetadataUri}`);
+    } catch (error) {
+      this.logger.error('Failed to create soulbound collection', error);
+      throw new Error('Failed to create collection');
+    }
   }
 
-  async createTree() {
-    const merkleTree = generateSigner(this.umi);
-    const builder = await createTreeV2(this.umi, {
-      merkleTree,
-      maxBufferSize: 64,
-      maxDepth: 14,
-    });
+  async createTree(): Promise<PublicKey> {
+    try {
+      const merkleTree = generateSigner(this.umi);
 
-    await builder.sendAndConfirm(this.umi);
-    console.log('Merkle tree:', merkleTree.publicKey);
-    this.merkleTreeAddress = merkleTree.publicKey;
+      const builder = await createTreeV2(this.umi, {
+        merkleTree,
+        maxBufferSize: this.MERKLE_TREE_CONFIG.maxBufferSize,
+        maxDepth: this.MERKLE_TREE_CONFIG.maxDepth,
+      });
 
-    return merkleTree;
+      await builder.sendAndConfirm(this.umi);
+
+      this.merkleTreeAddress = merkleTree.publicKey;
+      this.logger.log(`Merkle tree created: ${this.merkleTreeAddress}`);
+
+      return merkleTree.publicKey;
+    } catch (error) {
+      this.logger.error('Failed to create merkle tree', error);
+      throw new Error('Failed to create merkle tree');
+    }
   }
 
-  async prepareMintTransaction(user: PublicKey) {
-    const hasNft = await this.checkUserHasNFT(user);
-    if (hasNft) throw new BadRequestException('User already claimed the NFT');
+  async prepareMintTransaction(
+    user: PublicKey,
+  ): Promise<MintTransactionResult> {
+    this.validateConfiguration();
+
+    const hasNft = await this.checkUserHasNFT(user.toString());
+    if (hasNft) {
+      throw new BadRequestException('User has already claimed the NFT');
+    }
+
     const metadataUri = await this.createNFTMetadata(user.toString());
 
-    const mintBuilder = mintV2(this.umi, {
-      leafOwner: user,
-      leafDelegate: this.umi.identity.publicKey,
-      merkleTree: this.merkleTreeAddress,
-      coreCollection: this.collectionAddress,
-      metadata: {
-        name: `Early Contributor: Season 1`,
-        uri: metadataUri,
-        sellerFeeBasisPoints: 0,
-        collection: some(this.collectionAddress),
-        creators: [],
-      },
-    });
+    try {
+      const mintBuilder = mintV2(this.umi, {
+        leafOwner: user,
+        leafDelegate: this.umi.identity.publicKey,
+        merkleTree: this.merkleTreeAddress!,
+        coreCollection: this.collectionAddress!,
+        metadata: {
+          name: 'Early Contributor: Season 1',
+          uri: metadataUri,
+          sellerFeeBasisPoints: 0,
+          collection: some(this.collectionAddress!),
+          creators: [],
+        },
+      });
 
-    const tx = await mintBuilder
-      .setFeePayer(createNoopSigner(user))
-      .buildWithLatestBlockhash(this.umi);
+      const tx = await mintBuilder
+        .setFeePayer(createNoopSigner(user))
+        .buildWithLatestBlockhash(this.umi);
 
-    const serializedTx = this.umi.transactions.serialize(tx);
-    const base64Tx = Buffer.from(serializedTx).toString('base64');
+      const serializedTx = this.umi.transactions.serialize(tx);
+      const base64Tx = Buffer.from(serializedTx).toString('base64');
 
-    return {
-      transaction: base64Tx,
-      metadataUri,
-    };
+      return {
+        transaction: base64Tx,
+        metadataUri,
+      };
+    } catch (error) {
+      this.logger.error('Failed to prepare mint transaction', error);
+      throw new Error('Failed to prepare mint transaction');
+    }
   }
 
-  async checkUserHasNFT(userWalletAddress: string) {
+  async checkUserHasNFT(userWalletAddress: string): Promise<boolean> {
+    this.validateConfiguration();
+
     try {
       const userPublicKey = publicKey(userWalletAddress);
-
       const assets = await this.umi.rpc.getAssetsByOwner({
         owner: userPublicKey,
       });
 
-      const hasNFT = assets.items.some((asset) =>
+      return assets.items.some((asset) =>
         asset.grouping?.some(
           (group) =>
             group.group_key === 'collection' &&
-            group.group_value === this.collectionAddress.toString(),
+            group.group_value === this.collectionAddress!.toString(),
         ),
       );
-
-      return hasNFT;
     } catch (error) {
-      console.error('Error checking NFT ownership:', error);
+      this.logger.error(
+        `Error checking NFT ownership for ${userWalletAddress}`,
+        error,
+      );
       return false;
+    }
+  }
+
+  private validateConfiguration(): void {
+    if (!this.merkleTreeAddress || !this.collectionAddress) {
+      throw new Error(
+        'Service not properly configured. Create collection and merkle tree first.',
+      );
     }
   }
 }

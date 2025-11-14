@@ -108,7 +108,9 @@ export class UserController {
   }
 
   @Get(':walletAddress')
-  async checkUserHasNFT(@Param('walletAddress') wallet: string) {
+  @UseGuards(JwtAuthGuard)
+  async checkUserHasNFT(@Req() req: Request & { user: { wallet: string } }) {
+    const wallet = req.user.wallet;
     return this.metaplexCNftService.checkUserHasNFT(wallet);
   }
 }
