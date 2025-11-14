@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,19 +17,20 @@ import { ClaimNonceDto } from './dto/claim-nonce.dto';
 import { ClaimNonceResponseDto } from './dto/claim-nonce-response.dto';
 import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { TestLoginDto } from './dto/test-login.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AuthService {
   private clientId: string;
   private redirectUri: string;
-  // TODO: NOT FOR PROD
-  private cache: Record<string, string> = {};
 
   constructor(
     private readonly config: ConfigService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.clientId = this.config.get<string>('twitter.client_id');
     this.redirectUri = this.config.get<string>('twitter.redirect_uri');
@@ -36,7 +38,7 @@ export class AuthService {
 
   async claimNonce(dto: ClaimNonceDto): Promise<ClaimNonceResponseDto> {
     const { wallet } = dto;
-    const nonce = this.generateNonce(wallet);
+    const nonce = await this.generateNonce(wallet);
     return {
       wallet,
       nonce,
@@ -45,7 +47,8 @@ export class AuthService {
 
   async verifySignature(dto: VerifySignatureDto): Promise<AuthResult> {
     const { wallet, signature } = dto;
-    const nonce = this.cache[wallet];
+    const key = this.getCachekey(wallet);
+    const nonce = await this.cacheManager.get<string>(key);
     if (!nonce) throw new BadRequestException(`Nonce not found`);
 
     const validatedWallet = this.validateSignature(wallet, signature, nonce);
@@ -167,8 +170,9 @@ export class AuthService {
     } as UserXDto;
   }
 
-  private generateNonce(wallet: string): string {
-    const existingNonce = this.cache[wallet];
+  private async generateNonce(wallet: string): Promise<string> {
+    const key = this.getCachekey(wallet);
+    const existingNonce = await this.cacheManager.get<string>(key);
     if (existingNonce) return existingNonce;
 
     const phrases = [
@@ -189,7 +193,7 @@ export class AuthService {
 
     const nonce = `backyard:${randomPhrase}:${randomSuffix}`;
 
-    this.cache[wallet] = nonce;
+    await this.cacheManager.set(key, nonce, 1000 * 60 * 60);
     return nonce;
   }
 
@@ -248,5 +252,9 @@ export class AuthService {
       );
       return null;
     }
+  }
+
+  private getCachekey(wallet: string) {
+    return `wallet:nonce:${wallet}`;
   }
 }

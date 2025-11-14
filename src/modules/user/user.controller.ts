@@ -24,6 +24,7 @@ import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MetaplexCNftService } from '../metaplex/metaplex-cnft';
 import { publicKey } from '@metaplex-foundation/umi';
+import { MintTransactionResult } from '../metaplex/interfaces/mint-transaction-result.interface';
 
 @ApiTags('users')
 @Controller('users')
@@ -100,15 +101,19 @@ export class UserController {
 
   @Post('prepare-mint')
   @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: MintTransactionResult })
   async prepareMintTransaction(
     @Req() req: Request & { user: { wallet: string } },
-  ) {
+  ): Promise<MintTransactionResult> {
     const wallet = req.user.wallet;
     return this.metaplexCNftService.prepareMintTransaction(publicKey(wallet));
   }
 
   @Get('check/:walletAddress')
-  async checkUserHasNFT(@Param('walletAddress') wallet: string) {
+  @ApiOkResponse({ type: Boolean })
+  async checkUserHasNFT(
+    @Param('walletAddress') wallet: string,
+  ): Promise<boolean> {
     return this.metaplexCNftService.checkUserHasNFT(wallet);
   }
 }

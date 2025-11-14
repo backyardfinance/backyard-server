@@ -1,3 +1,6 @@
-export interface MintTransactionResult {
+import { ApiProperty } from '@nestjs/swagger';
+
+export class MintTransactionResult {
+  @ApiProperty()
   transaction: string;
 }
