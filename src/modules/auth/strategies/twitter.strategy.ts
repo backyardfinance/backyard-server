@@ -13,10 +13,25 @@ export interface TwitterProfile {
 @Injectable()
 export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
   constructor(private readonly configService: ConfigService) {
+    const clientID = configService.get<string>('twitter.client_id');
+    const clientSecret = configService.get<string>('twitter.client_secret');
+    const callbackURL = configService.get<string>('twitter.redirect_uri');
+
+    console.log('[TwitterStrategy] Initializing with config:');
+    console.log(
+      '[TwitterStrategy] Client ID:',
+      clientID ? 'present' : 'missing',
+    );
+    console.log(
+      '[TwitterStrategy] Client Secret:',
+      clientSecret ? 'present' : 'missing',
+    );
+    console.log('[TwitterStrategy] Callback URL:', callbackURL);
+
     super({
-      clientID: configService.get<string>('twitter.client_id'),
-      clientSecret: configService.get<string>('twitter.client_secret'),
-      callbackURL: configService.get<string>('twitter.redirect_uri'),
+      clientID,
+      clientSecret,
+      callbackURL,
       scope: ['tweet.read', 'users.read', 'offline.access'],
       state: 'state',
       clientType: 'confidential',
