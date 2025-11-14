@@ -18,7 +18,6 @@ import { ClaimNonceDto } from './dto/claim-nonce.dto';
 import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { TwitterAuthGuard } from './guards/twitter-auth.guard';
-import { TwitterAuthWithTokenGuard } from './guards/twitter-auth-with-token.guard';
 import { TestLoginDto } from './dto/test-login.dto';
 
 @Controller('auth')
@@ -97,7 +96,7 @@ export class AuthController {
   }
 
   @Get('/x/login')
-  @UseGuards(TwitterAuthWithTokenGuard)
+  @UseGuards(TwitterAuthGuard)
   async login() {
     // Guard sets cookie and handles the redirect to Twitter
   }

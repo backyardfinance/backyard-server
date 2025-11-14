@@ -20,9 +20,9 @@ export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {
       scope: ['tweet.read', 'users.read', 'offline.access'],
       state: 'state',
       clientType: 'confidential',
-      // authorizationURL: 'https://x.com/i/oauth2/authorize',
-      // tokenURL: 'https://api.x.com/2/oauth2/token',
-      // passReqToCallback: true,
+      authorizationURL: 'https://x.com/i/oauth2/authorize',
+      tokenURL: 'https://api.x.com/2/oauth2/token',
+      passReqToCallback: true,
     });
   }
 
