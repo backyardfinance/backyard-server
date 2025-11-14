@@ -232,10 +232,6 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
     } catch (error) {
-      console.error(
-        '[AuthService] Access token verification failed:',
-        error.message,
-      );
       return null;
     }
   }
@@ -246,10 +242,6 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
     } catch (error) {
-      console.error(
-        '[AuthService] Refresh token verification failed:',
-        error.message,
-      );
       return null;
     }
   }
