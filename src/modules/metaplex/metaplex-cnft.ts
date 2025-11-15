@@ -6,8 +6,6 @@ import {
 import { createCollection } from '@metaplex-foundation/mpl-core';
 import { mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
 import {
-  createNoopSigner,
-  createNullSigner,
   generateSigner,
   keypairIdentity,
   publicKey,
@@ -225,7 +223,7 @@ export class MetaplexCNftService {
         },
       });
 
-      const tx = await mintBuilder.buildWithLatestBlockhash(this.umi);
+      const tx = mintBuilder.build(this.umi);
 
       const serializedTx = this.umi.transactions.serialize(tx);
       const base64Tx = Buffer.from(serializedTx).toString('base64');
