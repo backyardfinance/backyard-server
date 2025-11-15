@@ -6,6 +6,7 @@ import {
 import { createCollection } from '@metaplex-foundation/mpl-core';
 import { mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
 import {
+  createNoopSigner,
   generateSigner,
   keypairIdentity,
   publicKey,
@@ -21,6 +22,7 @@ import { PinataSDK } from 'pinata';
 import { NFTMetadata } from './interfaces/nft-metadata.interface';
 import { CollectionConfig } from './interfaces/collection-config.interface';
 import { MintTransactionResult } from './interfaces/mint-transaction-result.interface';
+import { toWeb3JsTransaction } from '@metaplex-foundation/umi-web3js-adapters';
 
 @Injectable()
 export class MetaplexCNftService {
@@ -223,9 +225,13 @@ export class MetaplexCNftService {
         },
       });
 
-      const tx = mintBuilder.build(this.umi);
+      const tx = await mintBuilder
+        .setFeePayer(createNoopSigner(user))
+        .useV0()
+        .buildAndSign(this.umi);
 
-      const serializedTx = this.umi.transactions.serialize(tx);
+      const web3tx = toWeb3JsTransaction(tx);
+      const serializedTx = web3tx.serialize();
       const base64Tx = Buffer.from(serializedTx).toString('base64');
 
       return {

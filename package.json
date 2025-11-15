@@ -33,6 +33,7 @@
     "@metaplex-foundation/umi": "^1.4.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.4.1",
     "@metaplex-foundation/umi-uploader-irys": "^1.4.1",
+    "@metaplex-foundation/umi-web3js-adapters": "^1.4.1",
     "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^10.0.0",
