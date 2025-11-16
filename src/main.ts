@@ -28,7 +28,7 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: false, // configService.get<string>('ENV') === 'prod',
+        secure: false, // configService.get<string>('NODE_ENV') === 'prod',
         sameSite: 'lax', // Allow cookies to be sent with top-level navigation (OAuth redirects)
         maxAge: 10 * 60 * 1000, // 10 minutes
       },

@@ -1,7 +1,7 @@
 import { env } from './env';
 
 export default () => ({
-  env: env.string('ENV'),
+  env: env.string('NODE_ENV'),
   node_env: env.string('NODE_ENV', 'development'),
   port: env.int('PORT', 4000),
   rpc_url: env.string('RPC_URL'),
