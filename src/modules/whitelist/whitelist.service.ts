@@ -77,6 +77,10 @@ export class WhitelistService {
     };
   }
 
+  getAllWhitelistParticipantsCount() {
+    return this.prisma.whitelistParticipant.count();
+  }
+
   async getAllWhitelistParticipants() {
     const participants = await this.prisma.whitelistParticipant.findMany({
       include: {

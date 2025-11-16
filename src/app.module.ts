@@ -18,7 +18,6 @@ import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { QuoteModule } from './modules/quote/quote.module';
-import { CronModule } from './modules/cron/cron.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
@@ -41,6 +40,7 @@ import Redis from 'ioredis';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         throttlers: [
+          { name: 'default', ttl: 60000, limit: 60 }, // 1 minute / 60 reqs
           { name: 'short', ttl: 300000, limit: 5 }, // 5 minutes
           { name: 'medium', ttl: 600000, limit: 5 }, // 10 minutes
           { name: 'long', ttl: 1800000, limit: 20 }, // 30 minutes

@@ -27,18 +27,29 @@ export class WhitelistController {
   @Get('participants')
   @ApiOkResponse({
     type: [WhitelistParticipantDto],
-    description: 'Get all whitelist participants',
+    description: 'Get all whitelist participants count',
   })
   async getAllParticipants() {
-    return this.whitelistService.getAllWhitelistParticipants();
+    const count =
+      await this.whitelistService.getAllWhitelistParticipantsCount();
+    return { count };
   }
 
-  @Get('completed')
-  @ApiOkResponse({
-    type: [WhitelistParticipantDto],
-    description: 'Get whitelist participants who completed all tasks',
-  })
-  async getCompletedParticipants() {
-    return this.whitelistService.getCompletedWhitelistParticipants();
-  }
+  // @Get('participants')
+  // @ApiOkResponse({
+  //   type: [WhitelistParticipantDto],
+  //   description: 'Get all whitelist participants',
+  // })
+  // async getAllParticipants() {
+  //   return this.whitelistService.getAllWhitelistParticipants();
+  // }
+
+  // @Get('completed')
+  // @ApiOkResponse({
+  //   type: [WhitelistParticipantDto],
+  //   description: 'Get whitelist participants who completed all tasks',
+  // })
+  // async getCompletedParticipants() {
+  //   return this.whitelistService.getCompletedWhitelistParticipants();
+  // }
 }
