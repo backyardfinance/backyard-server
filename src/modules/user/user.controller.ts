@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { Request } from 'express';
@@ -26,6 +27,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MetaplexCNftService } from '../metaplex/metaplex-cnft';
 import { publicKey } from '@metaplex-foundation/umi';
 import { MintTransactionResult } from '../metaplex/interfaces/mint-transaction-result.interface';
+import { WhitelistService } from '../whitelist/whitelist.service';
 
 @ApiTags('users')
 @Controller('users')
@@ -33,17 +35,8 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly metaplexCNftService: MetaplexCNftService,
+    private readonly whitelistService: WhitelistService,
   ) {}
-
-  // @Post('siwe/nonce')
-  // async nonce(@Query('address') address: string) {
-  //   return this.userService.createNonce(address || 'anonymous');
-  // }
-  //
-  // @Post('siws/verify')
-  // async verifySiws(@Body() dto: VerifySiwsDto) {
-  //   return this.userService.verifySiws(dto);
-  // }
 
   @Get()
   @ApiOkResponse({ type: UsertInfoResponse, isArray: true })
@@ -87,7 +80,7 @@ export class UserController {
   @ApiOkResponse({ type: FollowStatusResponse })
   async checkFollow(@Req() req: Request & { user: { userId: string } }) {
     const userId = req.user.userId;
-    return await this.userService.checkUserFollow(userId);
+    return this.userService.checkUserFollow(userId);
   }
 
   @Post('check-retweet')
@@ -97,7 +90,7 @@ export class UserController {
   @ApiOkResponse({ type: RetweetStatusResponse })
   async checkRetweet(@Req() req: Request & { user: { userId: string } }) {
     const userId = req.user.userId;
-    return await this.userService.checkUserRetweet(userId);
+    return this.userService.checkUserRetweet(userId);
   }
 
   @Patch(':walletAddress')
@@ -108,15 +101,20 @@ export class UserController {
     return this.userService.updateUserByWallet(wallet, dto);
   }
 
-  @Post('prepare-mint/:walletAddress')
+  @Post('prepare-mint')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT')
   @SkipThrottle()
   @ApiOkResponse({ type: MintTransactionResult })
   async prepareMintTransaction(
-    @Param('walletAddress') wallet: string, // @Req() req: Request & { user: { wallet: string } },
+    @Req() req: Request & { user: { userId: string; wallet: string } },
   ): Promise<MintTransactionResult> {
-    // const wallet = req.user.wallet;
+    const userId = req.user.userId;
+    const wallet = req.user.wallet;
+    const user = await this.whitelistService.getWhitelistStatus(userId);
+    if (!user) throw new BadRequestException('User not found');
+    if (!user.isComplete)
+      throw new BadRequestException('User has not completed all the tasks yet');
     return this.metaplexCNftService.prepareMintTransaction(publicKey(wallet));
   }
 
