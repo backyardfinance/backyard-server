@@ -14,7 +14,7 @@ export class VerificationService {
       data: { userId, code },
     });
 
-    return code.split('').join(' ');
+    return code;
   }
 
   public async verifyCode(
