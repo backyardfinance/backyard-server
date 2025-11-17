@@ -1,17 +1,16 @@
 import './instrument';
 
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from './config/config.module';
-import { ExceptionFilter } from './common/utils';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
   const configService = app.get(ConfigService);
 
   const corsUrls = process.env.CORS_URLS!.split(',').map((url) => url.trim());
@@ -36,9 +35,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost)));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useGlobalInterceptors(new LoggingInterceptor());
 
   if (configService.get<string>('node_env') !== 'production') {
     const config = new DocumentBuilder()

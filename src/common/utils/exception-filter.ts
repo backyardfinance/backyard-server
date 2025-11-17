@@ -4,16 +4,18 @@ import {
   Catch,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import { SentryExceptionCaptured } from "@sentry/nestjs";
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Catch()
 export class ExceptionFilter extends BaseExceptionFilter {
-  private readonly logger = new Logger(ExceptionFilter.name);
-
-  constructor(protected readonly httpAdapterHost: HttpAdapterHost) {
+  constructor(
+    httpAdapterHost: HttpAdapterHost,
+    @InjectPinoLogger(ExceptionFilter.name)
+    private readonly logger: PinoLogger,
+  ) {
     super(httpAdapterHost.httpAdapter);
   }
 

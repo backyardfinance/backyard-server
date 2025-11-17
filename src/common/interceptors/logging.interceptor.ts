@@ -3,15 +3,18 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('HTTP');
+  constructor(
+    @InjectPinoLogger('HTTP')
+    private readonly logger: PinoLogger,
+  ) {}
 
   // Routes to exclude from logging
   private readonly excludedRoutes = [
@@ -24,7 +27,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
-    const { method, url, body, headers } = request;
+    const { method, url, body } = request;
 
     // Skip logging for excluded routes
     if (this.shouldExcludeRoute(url)) {
@@ -35,52 +38,77 @@ export class LoggingInterceptor implements NestInterceptor {
     const user = request['user'] as
       | { walletAddress?: string; userId?: string }
       | undefined;
-    const userContext = user
-      ? `User: ${user.walletAddress || user.userId || 'unknown'}`
-      : '';
 
-    // Start time for duration calculation
     const startTime = Date.now();
 
-    // Sanitize request body to avoid logging sensitive data
-    const sanitizedBody = this.sanitizeData(body);
-
     // Log incoming request
-    this.logger.log(
-      `→ [${method}] ${url} - ${userContext}${
-        Object.keys(sanitizedBody || {}).length > 0
-          ? ` - Body: ${JSON.stringify(sanitizedBody)}`
-          : ''
-      }`,
+    this.logger.info(
+      {
+        direction: 'incoming',
+        method,
+        url,
+        user: user
+          ? {
+              walletAddress: user.walletAddress,
+              userId: user.userId,
+            }
+          : undefined,
+        body: this.sanitizeData(body),
+        requestId: request.id || request.headers['x-request-id'],
+      },
+      `→ [${method}] ${url}`,
     );
 
     return next.handle().pipe(
       tap({
-        next: (data: any) => {
-          // Calculate request duration
+        next: () => {
           const duration = Date.now() - startTime;
           const statusCode = response.statusCode;
 
-          // Sanitize response body
-          const sanitizedResponse = this.sanitizeData(data);
-
-          // Log response
-          this.logger.log(
-            `← [${method}] ${url} → ${statusCode} (${duration}ms)${
-              sanitizedResponse && Object.keys(sanitizedResponse).length > 0
-                ? ` - Response: ${this.formatResponse(sanitizedResponse)}`
-                : ''
-            }`,
+          // Log successful response
+          this.logger.info(
+            {
+              direction: 'outgoing',
+              method,
+              url,
+              statusCode,
+              duration,
+              user: user
+                ? {
+                    walletAddress: user.walletAddress,
+                    userId: user.userId,
+                  }
+                : undefined,
+              requestId: request.id || request.headers['x-request-id'],
+            },
+            `← [${method}] ${url} → ${statusCode} (${duration}ms)`,
           );
         },
         error: (error: any) => {
-          // Calculate request duration even on error
           const duration = Date.now() - startTime;
           const statusCode = error.status || 500;
 
-          // Log error response (error details will be handled by exception filter)
+          // Log error response
           this.logger.error(
-            `← [${method}] ${url} → ${statusCode} (${duration}ms) - Error: ${error.message}`,
+            {
+              direction: 'outgoing',
+              method,
+              url,
+              statusCode,
+              duration,
+              user: user
+                ? {
+                    walletAddress: user.walletAddress,
+                    userId: user.userId,
+                  }
+                : undefined,
+              error: {
+                message: error.message,
+                name: error.name,
+              },
+              requestId: request.id || request.headers['x-request-id'],
+            },
+            `← [${method}] ${url} → ${statusCode} (${duration}ms)`,
           );
         },
       }),
@@ -101,7 +129,6 @@ export class LoggingInterceptor implements NestInterceptor {
 
   /**
    * Sanitize data to remove sensitive fields
-   * TODO: use Sentry
    */
   private sanitizeData(data: any): any {
     if (!data || typeof data !== 'object') {
@@ -122,26 +149,14 @@ export class LoggingInterceptor implements NestInterceptor {
     for (const key in sanitized) {
       if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
         sanitized[key] = '[REDACTED]';
-      } else if (typeof sanitized[key] === 'object') {
+      } else if (
+        typeof sanitized[key] === 'object' &&
+        sanitized[key] !== null
+      ) {
         sanitized[key] = this.sanitizeData(sanitized[key]);
       }
     }
 
     return sanitized;
-  }
-
-  /**
-   * Format response data for logging
-   * Truncate large responses to avoid cluttering logs
-   */
-  private formatResponse(data: any): string {
-    const jsonString = JSON.stringify(data);
-    const maxLength = 500; // Maximum response length to log
-
-    if (jsonString.length > maxLength) {
-      return jsonString.substring(0, maxLength) + '... (truncated)';
-    }
-
-    return jsonString;
   }
 }

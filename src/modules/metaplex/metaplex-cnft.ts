@@ -15,7 +15,7 @@ import {
   Umi,
 } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Connection } from '@solana/web3.js';
 import { PinataSDK } from 'pinata';
@@ -23,10 +23,10 @@ import { NFTMetadata } from './interfaces/nft-metadata.interface';
 import { CollectionConfig } from './interfaces/collection-config.interface';
 import { MintTransactionResult } from './interfaces/mint-transaction-result.interface';
 import { toWeb3JsTransaction } from '@metaplex-foundation/umi-web3js-adapters';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class MetaplexCNftService {
-  private readonly logger = new Logger(MetaplexCNftService.name);
   private readonly connection: Connection;
   private readonly umi: Umi;
   private readonly pinata: PinataSDK;
@@ -50,7 +50,11 @@ export class MetaplexCNftService {
     maxDepth: 14,
   };
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    @InjectPinoLogger(MetaplexCNftService.name)
+    private readonly logger: PinoLogger,
+  ) {
     const rpcUrl = this.config.get<string>(
       'RPC_URL',
       'https://api.devnet.solana.com',
@@ -170,8 +174,10 @@ export class MetaplexCNftService {
 
       this.collectionAddress = collectionSigner.publicKey;
 
-      this.logger.log(`Collection created: ${this.collectionAddress}`);
-      this.logger.log(`Collection metadata URI: ${this.collectionMetadataUri}`);
+      this.logger.info(`Collection created: ${this.collectionAddress}`);
+      this.logger.info(
+        `Collection metadata URI: ${this.collectionMetadataUri}`,
+      );
     } catch (error) {
       this.logger.error('Failed to create soulbound collection', error);
       throw new Error('Failed to create collection');
@@ -191,7 +197,7 @@ export class MetaplexCNftService {
       await builder.sendAndConfirm(this.umi);
 
       this.merkleTreeAddress = merkleTree.publicKey;
-      this.logger.log(`Merkle tree created: ${this.merkleTreeAddress}`);
+      this.logger.info(`Merkle tree created: ${this.merkleTreeAddress}`);
 
       return merkleTree.publicKey;
     } catch (error) {

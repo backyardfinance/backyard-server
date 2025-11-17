@@ -7,10 +7,15 @@ import {
   StrategyVaultInfo,
 } from '../../dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class StrategyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectPinoLogger(StrategyService.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async getStrategiesInfo(userId: string): Promise<StrategyInfoResponse[]> {
     const strategies: Strategy[] = await this.getStrategies(userId);
@@ -52,7 +57,7 @@ export class StrategyService {
       await this.addStrategyVaults(strategy.id, vaultDeposits);
       return strategy;
     } catch (error) {
-      console.error('Failed to create strategy:', error);
+      this.logger.error('Failed to create strategy:', error);
       return null;
     }
   }
@@ -110,7 +115,7 @@ export class StrategyService {
         });
       }
     } catch (error) {
-      console.error('Failed to create VaultStrategy:', error);
+      this.logger.error('Failed to create VaultStrategy:', error);
       return null;
     }
   }

@@ -4,7 +4,13 @@ import { nodeProfilingIntegration } from '@sentry/profiling-node';
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
   environment: process.env.NODE_ENV,
-  integrations: [nodeProfilingIntegration()],
+  integrations: [
+    nodeProfilingIntegration(),
+    Sentry.pinoIntegration({
+      log: { levels: ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] },
+      error: { levels: ['warn', 'error', 'fatal'], handled: true },
+    }),
+  ],
 
   // Send structured logs to Sentry
   enableLogs: true,
