@@ -1,17 +1,20 @@
-import { Controller, Get, Logger, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WhitelistService } from './whitelist.service';
 import { WhitelistStatusDto, WhitelistParticipantDto } from '../../dto';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Controller('whitelist')
 @ApiTags('whitelist')
 export class WhitelistController {
-  private readonly logger = new Logger(WhitelistController.name);
-  
-  constructor(private readonly whitelistService: WhitelistService) {}
+  constructor(
+    private readonly whitelistService: WhitelistService,
+    @InjectPinoLogger(WhitelistController.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   @Get('status')
   @UseGuards(JwtAuthGuard)
@@ -35,7 +38,7 @@ export class WhitelistController {
     const count =
       await this.whitelistService.getAllWhitelistParticipantsCount();
 
-    this.logger.log(`Total whitelist participants: ${count}`);
+    this.logger.info(`Total whitelist participants: ${count}`);
     return { count };
   }
 

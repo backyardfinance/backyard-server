@@ -1,17 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { Kvault } from './types';
 import { Prisma, Vault, VaultPlatform } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 // TODO:
 @Injectable()
 export class KaminoApiService {
-  private readonly logger = new Logger(KaminoApiService.name);
   private readonly vaultPlatform = VaultPlatform.Kamino;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectPinoLogger(KaminoApiService.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   public async upsertVaultsFromApi(): Promise<void> {
     const vaults = await this.getVaults();

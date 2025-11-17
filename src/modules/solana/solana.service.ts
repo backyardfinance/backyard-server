@@ -26,6 +26,7 @@ import { BackyardPrograms } from '../../common/idls/backyard_programs';
 import { Program } from '@coral-xyz/anchor';
 import { PrismaService } from '../prisma/prisma.service';
 import { VaultPlatform } from '@prisma/client';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class SolanaService {
@@ -36,6 +37,8 @@ export class SolanaService {
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
+    @InjectPinoLogger(SolanaService.name)
+    private readonly logger: PinoLogger,
   ) {
     // const rpc =
     //   this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
@@ -68,7 +71,7 @@ export class SolanaService {
     const kp = Keypair.fromSecretKey(
       Uint8Array.from(JSON.parse(process.env.MASTER_WALLET_PRIVATE_KEY!)),
     );
-    console.log(kp.publicKey.toBase58());
+    this.logger.info(`Master wallet public key: ${kp.publicKey.toBase58()}`);
   }
 
   async createVault(

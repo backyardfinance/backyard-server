@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import {
@@ -7,19 +7,23 @@ import {
   SendVerifyCodeEmailOptions,
 } from './types';
 import { MailSendingFailureError } from 'src/common/error';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class MailService implements OnModuleInit {
-  private readonly l = new Logger(MailService.name);
   private resend: Resend;
   private templateIdMap: Map<EmailTemplate, string>;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectPinoLogger(MailService.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   onModuleInit() {
     const apiKey = this.configService.get<string>('resend.api_key');
     if (!apiKey) {
-      this.l.warn('Resend API key not configured');
+      this.logger.warn('Resend API key not configured');
       return;
     }
 
@@ -32,7 +36,7 @@ export class MailService implements OnModuleInit {
       ],
     ]);
 
-    this.l.log('Resend Mail Service initialized');
+    this.logger.info('Resend Mail Service initialized');
   }
 
   private async sendMailFromTemplate(
@@ -67,10 +71,10 @@ export class MailService implements OnModuleInit {
         },
       });
 
-      this.l.log(`Email sent successfully to ${options.to}`);
+      this.logger.info(`Email sent successfully to ${options.to}`);
       return response;
     } catch (error) {
-      this.l.error(`Failed to send email: ${error.message}`, error.stack);
+      this.logger.error(`Failed to send email: ${error.message}`, error.stack);
       if (options.throwErrorOnFail) {
         throw new MailSendingFailureError('Error occurred while sending email');
       }

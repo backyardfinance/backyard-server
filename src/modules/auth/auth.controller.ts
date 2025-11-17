@@ -20,6 +20,7 @@ import { VerifySignatureDto } from './dto/verify-signature.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { TwitterAuthGuard } from './guards/twitter-auth.guard';
 import { TestLoginDto } from './dto/test-login.dto';
+import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -27,6 +28,8 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    @InjectPinoLogger(AuthController.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   @Post('claim-nonce')
@@ -154,9 +157,7 @@ export class AuthController {
       res.clearCookie('oauth_token');
 
       // Redirect to frontend with error parameter
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error occurred';
-      console.error('Error during Twitter callback:', errorMessage);
+      this.logger.error('Error during Twitter callback:', error);
       res.redirect(
         `${frontendUrl}${twitterAuthRedirectUrl}?error=${encodeURIComponent('Something goes wrong. Please try again.')}`,
       );

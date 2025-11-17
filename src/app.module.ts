@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
+import { ExceptionFilter } from './common/utils/exception-filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ConfigModule, ConfigService } from './config/config.module';
 import configuration from './config/configuration';
 import { VaultModule } from './modules/vault/vault.modules';
@@ -20,13 +22,16 @@ import KeyvRedis from '@keyv/redis';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { QuoteModule } from './modules/quote/quote.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import Redis from 'ioredis';
+import { LoggerModule } from 'nestjs-pino';
+import { pinoConfig } from './config/pino.config';
 
 @Module({
   imports: [
     SentryModule.forRoot(),
+    LoggerModule.forRoot(pinoConfig),
     ConfigModule(configuration),
     CacheModule.registerAsync({
       inject: [ConfigService],
@@ -69,5 +74,15 @@ import Redis from 'ioredis';
     QuoteModule,
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: ExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
 export class AppModule {}
