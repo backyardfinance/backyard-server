@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   ArgumentsHost,
   Catch,
@@ -5,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { SentryExceptionCaptured } from "@sentry/nestjs";
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core';
 
 @Catch()
@@ -15,6 +17,7 @@ export class ExceptionFilter extends BaseExceptionFilter {
     super(httpAdapterHost.httpAdapter);
   }
 
+  @SentryExceptionCaptured()
   public catch(exception: any, host: ArgumentsHost) {
     const applicationRef =
       this.applicationRef ||

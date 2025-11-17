@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from './config/config.module';
 import configuration from './config/configuration';
@@ -25,6 +26,7 @@ import Redis from 'ioredis';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule(configuration),
     CacheModule.registerAsync({
       inject: [ConfigService],
@@ -67,11 +69,5 @@ import Redis from 'ioredis';
     QuoteModule,
   ],
   controllers: [AppController],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
 })
 export class AppModule {}
