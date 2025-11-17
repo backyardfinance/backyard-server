@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Logger, Req, UseGuards } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -9,6 +9,8 @@ import { WhitelistStatusDto, WhitelistParticipantDto } from '../../dto';
 @Controller('whitelist')
 @ApiTags('whitelist')
 export class WhitelistController {
+  private readonly logger = new Logger(WhitelistController.name);
+  
   constructor(private readonly whitelistService: WhitelistService) {}
 
   @Get('status')
@@ -32,6 +34,8 @@ export class WhitelistController {
   async getAllParticipants() {
     const count =
       await this.whitelistService.getAllWhitelistParticipantsCount();
+
+    this.logger.log(`Total whitelist participants: ${count}`);
     return { count };
   }
 
