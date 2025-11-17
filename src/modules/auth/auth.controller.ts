@@ -158,7 +158,7 @@ export class AuthController {
         error instanceof Error ? error.message : 'Unknown error occurred';
       console.error('Error during Twitter callback:', errorMessage);
       res.redirect(
-        `${frontendUrl}${twitterAuthRedirectUrl}?error=${encodeURIComponent(errorMessage)}`,
+        `${frontendUrl}${twitterAuthRedirectUrl}?error=${encodeURIComponent('Something goes wrong. Please try again.')}`,
       );
     }
   }
