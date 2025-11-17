@@ -480,42 +480,7 @@ export class WhitelistStatusDto {
 }
 
 export class WhitelistParticipantDto {
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  id: string;
-
-  @IsString()
-  @ApiProperty()
-  userId: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty()
-  wallet?: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty()
-  email?: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty()
-  twitterUsername?: string;
-
-  @IsObject()
-  @ApiProperty({ type: WhitelistTasksDto })
-  tasks: WhitelistTasksDto;
-
-  @IsBoolean()
-  @ApiProperty()
-  isComplete: boolean;
-
-  @IsDate()
-  @ApiProperty()
-  createdAt: Date;
-
-  @IsDate()
-  @ApiProperty()
-  updatedAt: Date;
+  count: number;
 }

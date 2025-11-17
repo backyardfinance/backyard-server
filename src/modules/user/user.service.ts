@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import {
   CreateUserDto,
   FollowStatusResponse,
@@ -179,6 +179,16 @@ export class UserService {
   }
 
   async sendEmail(userId: string, dto: SendEmailDto) {
+    const existingUserWithEmail = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (existingUserWithEmail && existingUserWithEmail.id !== userId) {
+      throw new ConflictException(
+        'This email address is already registered to another account.',
+      );
+    }
+
     // Update the user's email field with the provided email
     await this.prisma.user.update({
       where: { id: userId },

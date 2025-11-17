@@ -26,7 +26,7 @@ export class WhitelistController {
 
   @Get('participants')
   @ApiOkResponse({
-    type: [WhitelistParticipantDto],
+    type: WhitelistParticipantDto,
     description: 'Get all whitelist participants count',
   })
   async getAllParticipants() {
