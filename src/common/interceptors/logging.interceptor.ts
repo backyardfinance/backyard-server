@@ -14,7 +14,11 @@ export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger('HTTP');
 
   // Routes to exclude from logging
-  private readonly excludedRoutes = ['/', '/api/docs'];
+  private readonly excludedRoutes = [
+    '/',
+    '/api/docs',
+    '/whitelist/participants',
+  ];
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
@@ -29,10 +33,10 @@ export class LoggingInterceptor implements NestInterceptor {
 
     // Extract user context from JWT payload if available
     const user = request['user'] as
-      | { walletAddress?: string; id?: string }
+      | { walletAddress?: string; userId?: string }
       | undefined;
     const userContext = user
-      ? `User: ${user.walletAddress || user.id || 'unknown'}`
+      ? `User: ${user.walletAddress || user.userId || 'unknown'}`
       : '';
 
     // Start time for duration calculation

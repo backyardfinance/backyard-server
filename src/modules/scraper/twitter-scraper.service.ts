@@ -36,6 +36,7 @@ export class TwitterService {
             'Content-Type': 'application/json',
             'X-Internal-Token': this.scraperToken,
           },
+          timeout: 30000,
         },
       );
 
@@ -62,6 +63,7 @@ export class TwitterService {
             'Content-Type': 'application/json',
             'X-Internal-Token': this.scraperToken,
           },
+          timeout: 30000,
         },
       );
 
