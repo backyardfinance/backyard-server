@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -38,7 +39,7 @@ export class WhitelistController {
     const count =
       await this.whitelistService.getAllWhitelistParticipantsCount();
 
-    this.logger.info(`Total whitelist participants: ${count}`);
+    Sentry.metrics.gauge('whitelist_participants_count', count);
     return { count };
   }
 
