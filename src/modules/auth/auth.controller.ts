@@ -158,8 +158,12 @@ export class AuthController {
 
       // Redirect to frontend with error parameter
       this.logger.error('Error during Twitter callback:', error);
+      let { message } = error;
+      if (!message || message.includes('prisma')) {
+        message = 'Something goes wrong. Please try again.';
+      }
       res.redirect(
-        `${frontendUrl}${twitterAuthRedirectUrl}?error=${encodeURIComponent('Something goes wrong. Please try again.')}`,
+        `${frontendUrl}${twitterAuthRedirectUrl}?error=${encodeURIComponent(message)}`,
       );
     }
   }

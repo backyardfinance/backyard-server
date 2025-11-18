@@ -219,6 +219,17 @@ export class UserService {
     xId: string,
     xUsername: string,
   ): Promise<User> {
+    // Check for duplicate xId before updating
+    const existingUserWithXId = await this.prisma.user.findUnique({
+      where: { xId },
+    });
+
+    if (existingUserWithXId && existingUserWithXId.id !== userId) {
+      throw new ConflictException(
+        'This Twitter account is already linked to another user.',
+      );
+    }
+
     // Update user with Twitter information
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
