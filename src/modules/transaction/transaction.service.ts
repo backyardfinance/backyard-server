@@ -17,7 +17,7 @@ export class TransactionService {
 
   constructor(private readonly builderFactory: BuilderFactory) {
     // TODO: create a provider
-    const rpc = 'https://solana-mainnet.gateway.tatum.io';
+    const rpc = 'https://api.devnet.solana.com';
     this.connection = new Connection(rpc, 'confirmed');
   }
 

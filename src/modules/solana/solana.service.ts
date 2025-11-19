@@ -19,6 +19,8 @@ import {
   createInitializeMint2Instruction,
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountInstruction,
+  createSetAuthorityInstruction,
+  AuthorityType,
 } from '@solana/spl-token';
 import axios from 'axios';
 import { TokenInfoResponse } from '../../dto';
@@ -42,7 +44,7 @@ export class SolanaService {
   ) {
     // const rpc =
     //   this.config.get<string>('rpc_url') || 'https://api.devnet.solana.com';
-    const rpc = 'https://solana-mainnet.gateway.tatum.io';
+    const rpc = 'https://api.devnet.solana.com';
     this.connection = new Connection(rpc, 'confirmed');
 
     const dummy = Keypair.generate();
@@ -139,7 +141,6 @@ export class SolanaService {
   async createLPAndAtas(
     authority: PublicKey,
     platformVaultInputToken: PublicKey,
-    platformLp: PublicKey,
     mintKeypair: Keypair = Keypair.generate(),
   ) {
     const extensions = [ExtensionType.NonTransferable];
@@ -164,30 +165,23 @@ export class SolanaService {
     const initializeMintIx = createInitializeMint2Instruction(
       mintKeypair.publicKey,
       6,
-      authority,
-      authority,
+      this.master.publicKey,
+      this.master.publicKey,
       TOKEN_2022_PROGRAM_ID,
     );
 
     const ata1 = getAssociatedTokenAddressSync(
       mintKeypair.publicKey,
       authority,
-      false,
-      TOKEN_2022_PROGRAM_ID,
-    );
-
-    const ata2 = getAssociatedTokenAddressSync(
-      platformLp,
-      authority,
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID,
     );
 
     const ata3 = getAssociatedTokenAddressSync(
       platformVaultInputToken,
       authority,
-      false,
-      TOKEN_2022_PROGRAM_ID,
+      true,
+      TOKEN_PROGRAM_ID,
     );
 
     const createAta1Ix = createAssociatedTokenAccountInstruction(
@@ -198,20 +192,12 @@ export class SolanaService {
       TOKEN_2022_PROGRAM_ID,
     );
 
-    const createAta2Ix = createAssociatedTokenAccountInstruction(
-      this.master.publicKey,
-      ata2,
-      authority,
-      platformLp,
-      TOKEN_2022_PROGRAM_ID,
-    );
-
     const createAta3Ix = createAssociatedTokenAccountInstruction(
       this.master.publicKey,
       ata3,
       authority,
       platformVaultInputToken,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
     );
 
     const setupTx = new Transaction().add(
@@ -219,7 +205,6 @@ export class SolanaService {
       initializeNonTransferableIx,
       initializeMintIx,
       createAta1Ix,
-      createAta2Ix,
       createAta3Ix,
     );
 
@@ -231,11 +216,11 @@ export class SolanaService {
 
     return {
       signature,
-      mint: mintKeypair.publicKey.toBase58(),
+      mint: mintKeypair.publicKey.toString(),
+      mintKeypair,
       authority: authority.toBase58(),
       atas: {
         backyardLp: ata1.toBase58(),
-        platformLp: ata2.toBase58(),
         inputToken: ata3.toBase58(),
       },
     };
@@ -404,5 +389,24 @@ export class SolanaService {
     return this.fetchCoingeckoPriceUsd(mint);
   }
 
-  // get vaults from db by user addr
+  async transferMintAuthority(mint: PublicKey, newAuthority: PublicKey) {
+    const transaction = new Transaction().add(
+      createSetAuthorityInstruction(
+        mint,
+        this.master.publicKey,
+        AuthorityType.MintTokens,
+        newAuthority,
+        [],
+        TOKEN_2022_PROGRAM_ID,
+      ),
+    );
+
+    const signature = await sendAndConfirmTransaction(
+      this.connection,
+      transaction,
+      [this.master],
+    );
+
+    return signature;
+  }
 }

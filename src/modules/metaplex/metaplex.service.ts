@@ -4,6 +4,7 @@ import {
   TokenStandard,
 } from '@metaplex-foundation/mpl-token-metadata';
 import {
+  createSignerFromKeypair,
   keypairIdentity,
   percentAmount,
   PublicKey,
@@ -12,7 +13,7 @@ import {
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Connection } from '@solana/web3.js';
+import { Connection, Keypair } from '@solana/web3.js';
 import { CreateMetadataParams } from './types';
 
 @Injectable()
@@ -32,7 +33,10 @@ export class MetaplexService {
     this.connection = new Connection(rpc, 'confirmed');
   }
 
-  async uploadToken2022Meta(params: CreateMetadataParams) {
+  async uploadToken2022Meta(
+    params: CreateMetadataParams,
+    mintKeypair: Keypair,
+  ) {
     const { mint, lpName, lpSymbol, uri } = params;
 
     const umi = createUmi(this.connection.rpcEndpoint);
@@ -40,8 +44,13 @@ export class MetaplexService {
     const umiWallet = umi.eddsa.createKeypairFromSecretKey(this.master);
     umi.use(keypairIdentity(umiWallet));
 
+    const umiMint = createSignerFromKeypair(
+      umi,
+      umi.eddsa.createKeypairFromSecretKey(mintKeypair.secretKey),
+    );
+
     const result = await createV1(umi, {
-      mint: publicKey(mint),
+      mint: umiMint,
       name: lpName,
       symbol: lpSymbol,
       uri,
