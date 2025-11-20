@@ -1,5 +1,5 @@
 {
-  "address": "CUuCLr2DXer9TKTgW6bqJRxQEu4JEvfGV6DcTsoE2E96",
+  "address": "A4JUtVP1QPKqjBmJSjyctTijPnkTw2UjaseC8EvyDGgm",
   "metadata": {
     "name": "backyard_programs",
     "version": "0.1.0",
@@ -9,7 +9,16 @@
   "instructions": [
     {
       "name": "create_vault",
-      "discriminator": [29, 237, 247, 208, 193, 82, 54, 135],
+      "discriminator": [
+        29,
+        237,
+        247,
+        208,
+        193,
+        82,
+        54,
+        135
+      ],
       "accounts": [
         {
           "name": "master",
@@ -24,7 +33,13 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [118, 97, 117, 108, 116]
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
               },
               {
                 "kind": "arg",
@@ -47,7 +62,16 @@
     },
     {
       "name": "deposit",
-      "discriminator": [242, 35, 198, 137, 82, 225, 242, 182],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
       "accounts": [
         {
           "name": "signer",
@@ -78,9 +102,38 @@
             "program": {
               "kind": "const",
               "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
               ]
             }
           }
@@ -106,37 +159,38 @@
             "program": {
               "kind": "const",
               "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
-              ]
-            }
-          }
-        },
-        {
-          "name": "vault_lp_ata",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "account",
-                "path": "token_program"
-              },
-              {
-                "kind": "account",
-                "path": "f_token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
               ]
             }
           }
@@ -166,9 +220,38 @@
             "program": {
               "kind": "const",
               "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
               ]
             }
           }
@@ -180,7 +263,13 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [118, 97, 117, 108, 116]
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
               },
               {
                 "kind": "arg",
@@ -188,47 +277,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "lending_admin"
-        },
-        {
-          "name": "lending",
-          "writable": true
-        },
-        {
-          "name": "f_token_mint",
-          "writable": true
-        },
-        {
-          "name": "supply_token_reserves_liquidity",
-          "writable": true
-        },
-        {
-          "name": "lending_supply_position_on_liquidity",
-          "writable": true
-        },
-        {
-          "name": "rate_model"
-        },
-        {
-          "name": "jupiter_vault",
-          "writable": true
-        },
-        {
-          "name": "liquidity",
-          "writable": true
-        },
-        {
-          "name": "liquidity_program",
-          "writable": true
-        },
-        {
-          "name": "rewards_rate_model"
-        },
-        {
-          "name": "lending_program",
-          "address": "7tjE28izRUjzmxC1QNXnNwcc4N82CNYCexf3k8mw67s3"
         },
         {
           "name": "associated_token_program",
@@ -258,7 +306,16 @@
     },
     {
       "name": "withdraw",
-      "discriminator": [183, 18, 70, 156, 148, 109, 161, 34],
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
       "accounts": [
         {
           "name": "signer",
@@ -289,9 +346,38 @@
             "program": {
               "kind": "const",
               "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
               ]
             }
           }
@@ -317,9 +403,38 @@
             "program": {
               "kind": "const",
               "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
               ]
             }
           }
@@ -327,34 +442,6 @@
         {
           "name": "lp_token",
           "writable": true
-        },
-        {
-          "name": "vault_lp_ata",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "account",
-                "path": "token_program"
-              },
-              {
-                "kind": "account",
-                "path": "f_token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
-              ]
-            }
-          }
         },
         {
           "name": "signer_lp_ata",
@@ -377,9 +464,38 @@
             "program": {
               "kind": "const",
               "value": [
-                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
-                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
-                219, 233, 248, 89
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
               ]
             }
           }
@@ -391,7 +507,13 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [118, 97, 117, 108, 116]
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
               },
               {
                 "kind": "arg",
@@ -399,51 +521,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "lending_admin"
-        },
-        {
-          "name": "lending",
-          "writable": true
-        },
-        {
-          "name": "f_token_mint",
-          "writable": true
-        },
-        {
-          "name": "supply_token_reserves_liquidity",
-          "writable": true
-        },
-        {
-          "name": "lending_supply_position_on_liquidity",
-          "writable": true
-        },
-        {
-          "name": "rate_model"
-        },
-        {
-          "name": "jupiter_vault",
-          "writable": true
-        },
-        {
-          "name": "claim_account",
-          "writable": true
-        },
-        {
-          "name": "liquidity",
-          "writable": true
-        },
-        {
-          "name": "liquidity_program",
-          "writable": true
-        },
-        {
-          "name": "rewards_rate_model"
-        },
-        {
-          "name": "lending_program",
-          "address": "7tjE28izRUjzmxC1QNXnNwcc4N82CNYCexf3k8mw67s3"
         },
         {
           "name": "associated_token_program",
@@ -474,159 +551,42 @@
   ],
   "accounts": [
     {
-      "name": "Lending",
-      "discriminator": [135, 199, 82, 16, 249, 131, 182, 241]
-    },
-    {
-      "name": "LendingAdmin",
-      "discriminator": [42, 8, 33, 220, 163, 40, 210, 5]
-    },
-    {
       "name": "Vault",
-      "discriminator": [211, 8, 232, 43, 2, 152, 117, 119]
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "FTokenDepositInsignificant"
+      "name": "CustomError",
+      "msg": "Custom error message"
     },
     {
       "code": 6001,
-      "name": "FTokenMinAmountOut"
+      "name": "NotOwner",
+      "msg": "You are not the owner"
     },
     {
       "code": 6002,
-      "name": "FTokenMaxAmount"
+      "name": "InvalidLpMintAuthority",
+      "msg": "Invalid LP mint authority"
     },
     {
       "code": 6003,
-      "name": "FTokenInvalidParams"
-    },
-    {
-      "code": 6004,
-      "name": "FTokenRewardsRateModelAlreadySet"
-    },
-    {
-      "code": 6005,
-      "name": "FTokenMaxAuthCountReached"
-    },
-    {
-      "code": 6006,
-      "name": "FTokenLiquidityExchangePriceUnexpected"
-    },
-    {
-      "code": 6007,
-      "name": "FTokenCpiToLiquidityFailed"
-    },
-    {
-      "code": 6008,
-      "name": "FTokenOnlyAuth"
-    },
-    {
-      "code": 6009,
-      "name": "FTokenOnlyAuthority"
-    },
-    {
-      "code": 6010,
-      "name": "FTokenOnlyRebalancer"
-    },
-    {
-      "code": 6011,
-      "name": "FTokenUserSupplyPositionRequired"
-    },
-    {
-      "code": 6012,
-      "name": "FTokenLiquidityProgramMismatch"
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
     }
   ],
   "types": [
-    {
-      "name": "Lending",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "f_token_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "lending_id",
-            "type": "u16"
-          },
-          {
-            "name": "decimals",
-            "type": "u8"
-          },
-          {
-            "name": "rewards_rate_model",
-            "type": "pubkey"
-          },
-          {
-            "name": "liquidity_exchange_price",
-            "type": "u64"
-          },
-          {
-            "name": "token_exchange_price",
-            "type": "u64"
-          },
-          {
-            "name": "last_update_timestamp",
-            "type": "u64"
-          },
-          {
-            "name": "token_reserves_liquidity",
-            "type": "pubkey"
-          },
-          {
-            "name": "supply_position_on_liquidity",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "LendingAdmin",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "pubkey"
-          },
-          {
-            "name": "liquidity_program",
-            "type": "pubkey"
-          },
-          {
-            "name": "rebalancer",
-            "type": "pubkey"
-          },
-          {
-            "name": "next_lending_id",
-            "type": "u16"
-          },
-          {
-            "name": "auths",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
     {
       "name": "Vault",
       "type": {

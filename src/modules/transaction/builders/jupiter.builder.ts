@@ -15,8 +15,8 @@ import {
   Provider,
   Wallet,
 } from '@coral-xyz/anchor';
-import idl from '../../../common/idls/backyard_programs_dev.json';
-import { BackyardPrograms } from '../../../common/idls/backyard_programs_dev';
+import idl from '../../../common/idls/backyard_programs.json';
+import { BackyardPrograms } from '../../../common/idls/backyard_programs';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { QuoteType } from 'src/modules/quote/dto/quote-type.enum';

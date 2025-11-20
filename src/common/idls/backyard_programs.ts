@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/backyard_programs.json`.
  */
 export type BackyardPrograms = {
-  address: 'CUuCLr2DXer9TKTgW6bqJRxQEu4JEvfGV6DcTsoE2E96';
+  address: 'A4JUtVP1QPKqjBmJSjyctTijPnkTw2UjaseC8EvyDGgm';
   metadata: {
     name: 'backyardPrograms';
     version: '0.1.0';
@@ -178,63 +178,6 @@ export type BackyardPrograms = {
           };
         },
         {
-          name: 'vaultLpAta';
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                path: 'vault';
-              },
-              {
-                kind: 'account';
-                path: 'tokenProgram';
-              },
-              {
-                kind: 'account';
-                path: 'fTokenMint';
-              },
-            ];
-            program: {
-              kind: 'const';
-              value: [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89,
-              ];
-            };
-          };
-        },
-        {
           name: 'lpToken';
           writable: true;
         },
@@ -310,47 +253,6 @@ export type BackyardPrograms = {
               },
             ];
           };
-        },
-        {
-          name: 'lendingAdmin';
-        },
-        {
-          name: 'lending';
-          writable: true;
-        },
-        {
-          name: 'fTokenMint';
-          writable: true;
-        },
-        {
-          name: 'supplyTokenReservesLiquidity';
-          writable: true;
-        },
-        {
-          name: 'lendingSupplyPositionOnLiquidity';
-          writable: true;
-        },
-        {
-          name: 'rateModel';
-        },
-        {
-          name: 'jupiterVault';
-          writable: true;
-        },
-        {
-          name: 'liquidity';
-          writable: true;
-        },
-        {
-          name: 'liquidityProgram';
-          writable: true;
-        },
-        {
-          name: 'rewardsRateModel';
-        },
-        {
-          name: 'lendingProgram';
-          address: '7tjE28izRUjzmxC1QNXnNwcc4N82CNYCexf3k8mw67s3';
         },
         {
           name: 'associatedTokenProgram';
@@ -509,63 +411,6 @@ export type BackyardPrograms = {
           writable: true;
         },
         {
-          name: 'vaultLpAta';
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                path: 'vault';
-              },
-              {
-                kind: 'account';
-                path: 'tokenProgram';
-              },
-              {
-                kind: 'account';
-                path: 'fTokenMint';
-              },
-            ];
-            program: {
-              kind: 'const';
-              value: [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89,
-              ];
-            };
-          };
-        },
-        {
           name: 'signerLpAta';
           writable: true;
           pda: {
@@ -639,51 +484,6 @@ export type BackyardPrograms = {
           };
         },
         {
-          name: 'lendingAdmin';
-        },
-        {
-          name: 'lending';
-          writable: true;
-        },
-        {
-          name: 'fTokenMint';
-          writable: true;
-        },
-        {
-          name: 'supplyTokenReservesLiquidity';
-          writable: true;
-        },
-        {
-          name: 'lendingSupplyPositionOnLiquidity';
-          writable: true;
-        },
-        {
-          name: 'rateModel';
-        },
-        {
-          name: 'jupiterVault';
-          writable: true;
-        },
-        {
-          name: 'claimAccount';
-          writable: true;
-        },
-        {
-          name: 'liquidity';
-          writable: true;
-        },
-        {
-          name: 'liquidityProgram';
-          writable: true;
-        },
-        {
-          name: 'rewardsRateModel';
-        },
-        {
-          name: 'lendingProgram';
-          address: '7tjE28izRUjzmxC1QNXnNwcc4N82CNYCexf3k8mw67s3';
-        },
-        {
           name: 'associatedTokenProgram';
           address: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
         },
@@ -712,14 +512,6 @@ export type BackyardPrograms = {
   ];
   accounts: [
     {
-      name: 'lending';
-      discriminator: [135, 199, 82, 16, 249, 131, 182, 241];
-    },
-    {
-      name: 'lendingAdmin';
-      discriminator: [42, 8, 33, 220, 163, 40, 210, 5];
-    },
-    {
       name: 'vault';
       discriminator: [211, 8, 232, 43, 2, 152, 117, 119];
     },
@@ -727,144 +519,26 @@ export type BackyardPrograms = {
   errors: [
     {
       code: 6000;
-      name: 'fTokenDepositInsignificant';
+      name: 'customError';
+      msg: 'Custom error message';
     },
     {
       code: 6001;
-      name: 'fTokenMinAmountOut';
+      name: 'notOwner';
+      msg: 'You are not the owner';
     },
     {
       code: 6002;
-      name: 'fTokenMaxAmount';
+      name: 'invalidLpMintAuthority';
+      msg: 'Invalid LP mint authority';
     },
     {
       code: 6003;
-      name: 'fTokenInvalidParams';
-    },
-    {
-      code: 6004;
-      name: 'fTokenRewardsRateModelAlreadySet';
-    },
-    {
-      code: 6005;
-      name: 'fTokenMaxAuthCountReached';
-    },
-    {
-      code: 6006;
-      name: 'fTokenLiquidityExchangePriceUnexpected';
-    },
-    {
-      code: 6007;
-      name: 'fTokenCpiToLiquidityFailed';
-    },
-    {
-      code: 6008;
-      name: 'fTokenOnlyAuth';
-    },
-    {
-      code: 6009;
-      name: 'fTokenOnlyAuthority';
-    },
-    {
-      code: 6010;
-      name: 'fTokenOnlyRebalancer';
-    },
-    {
-      code: 6011;
-      name: 'fTokenUserSupplyPositionRequired';
-    },
-    {
-      code: 6012;
-      name: 'fTokenLiquidityProgramMismatch';
+      name: 'invalidAmount';
+      msg: 'Invalid amount';
     },
   ];
   types: [
-    {
-      name: 'lending';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'mint';
-            type: 'pubkey';
-          },
-          {
-            name: 'fTokenMint';
-            type: 'pubkey';
-          },
-          {
-            name: 'lendingId';
-            type: 'u16';
-          },
-          {
-            name: 'decimals';
-            type: 'u8';
-          },
-          {
-            name: 'rewardsRateModel';
-            type: 'pubkey';
-          },
-          {
-            name: 'liquidityExchangePrice';
-            type: 'u64';
-          },
-          {
-            name: 'tokenExchangePrice';
-            type: 'u64';
-          },
-          {
-            name: 'lastUpdateTimestamp';
-            type: 'u64';
-          },
-          {
-            name: 'tokenReservesLiquidity';
-            type: 'pubkey';
-          },
-          {
-            name: 'supplyPositionOnLiquidity';
-            type: 'pubkey';
-          },
-          {
-            name: 'bump';
-            type: 'u8';
-          },
-        ];
-      };
-    },
-    {
-      name: 'lendingAdmin';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'authority';
-            type: 'pubkey';
-          },
-          {
-            name: 'liquidityProgram';
-            type: 'pubkey';
-          },
-          {
-            name: 'rebalancer';
-            type: 'pubkey';
-          },
-          {
-            name: 'nextLendingId';
-            type: 'u16';
-          },
-          {
-            name: 'auths';
-            type: {
-              vec: 'pubkey';
-            };
-          },
-          {
-            name: 'bump';
-            type: 'u8';
-          },
-        ];
-      };
-    },
     {
       name: 'vault';
       type: {
