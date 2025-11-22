@@ -8,6 +8,7 @@ import {
 import { ApiOkResponse } from '@nestjs/swagger';
 import { WalletToUserPipe } from '../../common/pipes/wallet-to-user-pipe';
 import { StrategyService } from './strategy.service';
+import { CreateStrategyResponseDto } from './dto/create-strategy-response.dto';
 
 @Controller('strategies')
 export class StrategyController {
@@ -49,8 +50,12 @@ export class StrategyController {
   async deleteStrategy(@Param('strategyId') strategyId: string) {
     return this.strategyService.deleteStrategy(strategyId);
   }
+
   @Post('create')
-  async create(@Body() dto: CreateStrategyDto) {
+  @ApiOkResponse({ type: CreateStrategyResponseDto })
+  async create(
+    @Body() dto: CreateStrategyDto,
+  ): Promise<CreateStrategyResponseDto> {
     return this.strategyService.createStrategy(
       dto.walletAddress,
       dto.name,

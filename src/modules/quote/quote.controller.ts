@@ -11,7 +11,7 @@ export class QuoteController {
 
   @Post()
   @ApiResponse({
-    type: QuoteResponseDto,
+    type: [QuoteResponseDto],
   })
   async getQuote(@Body() dto: GetQuoteDto): Promise<QuoteResponseDto> {
     return this.quoteService.getQuote(dto);
